@@ -1,0 +1,230 @@
+  <!-- ДИДЖИТАЛ -->
+  <section class="portfolio" id="digital">
+    <h2 class="portfolio__title">диджитал</h2>
+    <div class="grid is-collapsed">
+      <figure class="card">
+        <video src="assets/anim5.mp4" aria-label="Анимация 5" data-detail="detail-anim5" data-desc="Постер, который я сделала сама для себя, без цели. Иллюстрацию лица я изначально нарисовала на холсте ручкой и красками, потом повторила в диджитал на планшете, в программе ProCreate. Постер собирала в Photoshop, анимацию в After Effects." data-date="август 2024" autoplay muted loop playsinline preload="metadata"></video>
+      </figure>
+      <figure class="card">
+        <video src="assets/anim3.mp4" aria-label="Анимация 3" data-detail="detail-anim3" data-desc="Анимация, которую я сделала сама для себя, в новый 2026 год. Полностью все собирала в After Effects." data-date="декабрь 2025" autoplay muted loop playsinline preload="metadata"></video>
+      </figure>
+      <figure class="card">
+        <video src="assets/anim4.mp4" aria-label="Анимация 4" data-detail="detail-anim4" data-desc="Зацикленная анимация, которую я делала в агентстве FISTASHKI для бренда t2. Анимация для большого драматического театра. Собирала анимацию в After Effects, фотки генерила в Midjourney и подготавливала к анимации в Photoshop." data-date="март 2025" autoplay muted loop playsinline preload="metadata"></video>
+      </figure>
+      <figure class="card">
+        <video src="assets/anim2.mp4" aria-label="Анимация 2" data-detail="detail-anim2" autoplay muted loop playsinline preload="metadata"></video>
+      </figure>
+      <figure class="card">
+        <video src="assets/anim7.mp4" aria-label="Анимация 7" data-detail="detail-anim7" data-desc="Анимация для t2, которую я сделала в агентстве Fistashki. Работала в After Effects." data-date="август 2025" autoplay muted loop playsinline preload="metadata"></video>
+      </figure>
+      <figure class="card">
+        <video src="assets/anim8.mp4" aria-label="Анимация 8" data-detail="detail-anim8" data-desc="Зацикленная анимация агентства FISTASHKI, отражающая кейс Банка России. Абстракция летающих объектов из портала. Собирала в After Effects. Объекты брала со стоков." data-date="ноябрь 2025" autoplay muted loop playsinline preload="metadata"></video>
+      </figure>
+    </div>
+    <div class="section-more">
+      <button class="btn-more" type="button">смотреть ещё</button>
+      <button class="btn-hide" type="button" hidden>скрыть</button>
+    </div>
+
+    <!-- Подробный разбор работы для модалки. Лежит в <template>, поэтому браузер не
+         грузит семь картинок, пока работу не откроют, — содержимое шаблона инертно.
+         Карточка выше ссылается сюда через data-detail; работы без data-detail
+         открываются прежней простой модалкой (медиа + описание).
+         Шаблон обязан лежать ВНУТРИ <section>: include.js подставляет из файла-вьюхи
+         только один корневой элемент, всё, что рядом с секцией, потерялось бы. -->
+    <template id="detail-anim2">
+      <article class="work">
+        <!-- Зацикленное видео без интерфейса, на всю ширину окна. Запускает его
+             initDetailVideos, когда оно в поле зрения (data-autoplay вместо autoplay).
+             muted обязателен: без него браузер не даст видео запуститься самому. -->
+        <video class="work__video" src="assets/tg-em1.mp4" width="806" height="558" data-autoplay muted loop playsinline preload="none" aria-label="Анимированные эмоджи Fistashki"></video>
+
+        <a class="work__button" href="https://t.me/addemoji/creativedigirati" target="_blank" rel="noopener">Ссылка на эмоджи</a>
+
+        <p class="work__label">ТЗ</p>
+        <p class="work__text">Необходимо было создать набор эмоджи для агентства Fistashki. Был набор необходимых эмоджи для написания в тг постах. Я выбрала стеклянную стилистику элементов, соответственно бренду, в фирменных цветах агентства</p>
+
+        <div class="work__emoji work__emoji--three">
+          <img src="assets/tg-em_01.webp" alt="Эмоджи: карандаш" loading="lazy">
+          <img src="assets/tg-em_02.webp" alt="Эмоджи: сердце" loading="lazy">
+          <img src="assets/tg-em_03.webp" alt="Эмоджи: грустный документ" loading="lazy">
+        </div>
+
+        <p class="work__text">Я сделала некоторые эмоджи анимированными: глитч для фирменной фисташковой головы, бьющееся сердце, анимированный лого и цифры, переливы на сияния.<br>Сами элементы я генерировала в ИИ</p>
+
+        <div class="work__emoji work__emoji--grid">
+          <img src="assets/tg-em_04.webp" alt="Эмоджи: лягушка" loading="lazy">
+          <img src="assets/tg-em_05.webp" alt="Эмоджи: анатомическое сердце" loading="lazy">
+          <img src="assets/tg-em_06.webp" alt="Эмоджи: логотип Fistashki" loading="lazy">
+          <img src="assets/tg-em_07.webp" alt="Эмоджи: стеклянная голова" loading="lazy">
+          <img src="assets/tg-em_08.webp" alt="Эмоджи: какашка" loading="lazy">
+          <img src="assets/tg-em_09.webp" alt="Эмоджи: огонь" loading="lazy">
+          <img src="assets/tg-em_10.webp" alt="Эмоджи: ёлка" loading="lazy">
+          <img src="assets/tg-em_11.webp" alt="Эмоджи: карандаш" loading="lazy">
+        </div>
+
+        <p class="work__date">июль 2026</p>
+      </article>
+    </template>
+
+    <!-- Разбор третьей работы: новогодняя анимация с кубом. Шесть видео, ~38МБ вместе,
+         поэтому все с data-autoplay и preload="none" — играют только в поле зрения. -->
+    <template id="detail-anim3">
+      <article class="work">
+        <video class="work__video" src="assets/anim3.mp4" width="1080" height="1440" data-autoplay data-sound muted loop playsinline preload="none" aria-label="Анимация 2026 года"></video>
+
+        <p class="work__label">Анимация 2026 года</p>
+        <p class="work__text">Я сделала для себя видео в новый год, просто экспериментальная анимашка.</p>
+
+        <div class="work__videos work__videos--pair">
+          <video class="work__video" src="assets/cube2.mp4" width="1080" height="1440" data-autoplay muted loop playsinline preload="none" aria-label="Цветовой вариант анимации"></video>
+          <video class="work__video" src="assets/cube5.mp4" width="1080" height="1440" data-autoplay muted loop playsinline preload="none" aria-label="Второй цветовой вариант анимации"></video>
+        </div>
+
+        <p class="work__text">Фон сделала из звезд с эффектом bulge, добавила time poster для маленького fps. Сделала два цветовых варианта расцветки. Кубик сделала из прямоугольников, меняющих расположение точек, высчитывала точки для ровного расположения. Анимация зациклена. Добавляла музыку и замедляла ее так, чтобы она тоже казалась зацикленной и совпадала с ритмом анимации.</p>
+
+        <div class="work__videos">
+          <video class="work__video" src="assets/cube4.mp4" width="886" height="534" data-autoplay muted loop playsinline preload="none" aria-label="Процесс работы над анимацией"></video>
+        </div>
+
+        <a class="work__button" href="https://www.instagram.com/p/DTL1SFUjMEL/?utm_source=ig_web_copy_link&amp;stkn=MzRlODBiNWFlZA==" target="_blank" rel="noopener">Ссылка на пост</a>
+
+        <p class="work__date">декабрь 2025</p>
+      </article>
+    </template>
+
+    <!-- Разбор четвёртой работы: видео для драмтеатра в Тюмени (t2). -->
+    <template id="detail-anim4">
+      <article class="work">
+        <video class="work__video" src="assets/anim4.mp4" width="1080" height="1080" data-autoplay muted loop playsinline preload="none" aria-label="Видео для театра в Тюмени"></video>
+
+        <p class="work__label">Видео для театра в Тюмени</p>
+
+        <!-- Слева ТЗ, справа референс из него. Текст ТЗ — цитата клиента, поэтому
+             оставлен дословно. -->
+        <div class="work__brief">
+          <div class="work__brief-text">
+            <p class="work__label">ТЗ</p>
+            <p class="work__text">Суть визуала: хотим создать видео на основе примера</p>
+            <p class="work__text">Взять несколько достопримечательностей Тюмени для перечисления, выбрать именно драмтеатр</p>
+            <p class="work__text">Внутри театра, перед началом спектакля, крупно, партер, один из зрителей фотографирует заставку спектакля на телефон, в углу экрана видно, что он абонент Т2 / или человек на телефоне звук выключает, и видно оператора на экране / или еще какой-то вариант:)</p>
+            <p class="work__text">Цвета иллюстрации: не обязательно делать чб вариант, можно придерживаться гармоничного сочетания основной палитры бренда для визуалов. Можно взять мадженту как один из самых узнаваемых цветов бренда.</p>
+            <p class="work__text">Посев будем проводить ТГ и ВК.</p>
+          </div>
+          <img class="work__brief-img" src="assets/teatr-ref.jpg" width="171" height="371" alt="Пример из ТЗ: кадр видео-референса" loading="lazy">
+        </div>
+
+        <p class="work__text">Скрин с задачи, где я сделала первую раскадровку</p>
+
+        <div class="work__row">
+          <img src="assets/teatr-task.jpg" width="1043" height="837" alt="Скриншот задачи с первой раскадровкой" loading="lazy">
+        </div>
+
+        <p class="work__text">В те времена мы пользовались Миджорни: я генерила несколько вариантов разных стилистик театра снаружи и внутри, мы остановились на наиболее приближенной версии реальных тюменских достопримечательностей в конфетной расцветке.</p>
+
+        <div class="work__row">
+          <img class="work__img--clear" src="assets/teatr-grid.webp" width="1400" height="1410" alt="Варианты из Midjourney: зал театра, руки со зданиями, фасады" loading="lazy">
+        </div>
+
+        <p class="work__text">Процесс анимации в after effects</p>
+
+        <video class="work__video" src="assets/teatr-screencast.mp4" width="1920" height="1022" data-autoplay muted loop playsinline preload="none" aria-label="Скринкаст работы над анимацией в After Effects"></video>
+
+        <p class="work__date">март 2025</p>
+      </article>
+    </template>
+
+    <!-- Разбор пятой работы: анимированный постер «Да ты хоть знаешь, кто ты такой?». -->
+    <template id="detail-anim5">
+      <article class="work">
+        <video class="work__video" src="assets/anim5.mp4" width="2048" height="2048" data-autoplay muted loop playsinline preload="none" aria-label="Анимированный постер «Да ты хоть знаешь, кто ты такой?»"></video>
+
+        <p class="work__label">Да ты хоть знаешь, кто ты такой?</p>
+        <p class="work__text">Один из коллекции анимированных постеров, которые я делала просто для себя и выкладывала в инстаграм. Это лицо сначала я рисовала ручкой на холсте, потом перевела в диджитал на айпаде. Сделала постер и анимировала все в афтер эффектс. Использовала эффекты бегущего текста, тайм постер. Суть фразы типа в том, что гопники по типу этой морды могут в качестве угрозы задать вопрос “да ты хоть знаешь, кто Я такой?”. А я чуть перевернула этот вопрос скорее в философско-психологическое русло, спрашивая про тебя. Кто ты такой?</p>
+
+        <!-- Вертикальное видео вписано в квадрат со стороной во всю ширину окна: высота
+             видео = ширине окна, по бокам поля. -->
+        <div class="work__square">
+          <video class="work__video" src="assets/ty-takoj.mp4" width="1080" height="1920" data-autoplay data-sound muted loop playsinline preload="none" aria-label="Второй вариант анимации постера"></video>
+        </div>
+
+        <a class="work__button" href="https://www.instagram.com/p/C__ZbB6qIg8/" target="_blank" rel="noopener">Ссылка на пост</a>
+
+        <!-- Рисунок и видео в один ряд одной высоты: доли ширины пропорциональны их
+             соотношению сторон (картинка 1000×927, видео — квадрат). -->
+        <div class="work__row work__row--faces">
+          <img src="assets/ty-takoj-faces.jpg" width="1000" height="927" alt="Рисунок лица ручкой и его цветная версия" loading="lazy">
+          <video class="work__video" src="assets/poster6_1.mp4" width="2048" height="2048" data-autoplay muted loop playsinline preload="none" aria-label="Анимированный постер из той же коллекции"></video>
+        </div>
+
+        <p class="work__date">август 2024</p>
+      </article>
+    </template>
+
+    <template id="detail-anim7">
+      <article class="work">
+        <video class="work__video" src="assets/mayakovski.mp4" width="1080" height="1080" data-autoplay muted loop playsinline preload="none" aria-label="Анимация с Маяковским"></video>
+
+        <p class="work__label">Анимация с Маяковским</p>
+
+        <!-- ТЗ: текст слева, справа столбиком две картинки, приложенные к задаче
+             (вырезаны из скринов mayakovski3/4). data-ratio — ширина к высоте всего
+             столбика: 682 / (406 + 507), по нему initBriefs подгоняет высоту к тексту. -->
+        <div class="work__brief">
+          <div class="work__brief-text">
+            <p class="work__label">ТЗ</p>
+            <p class="work__text">Клиент хочет сделать видео, чтобы удержать внимание и чтоб оно не растянулось на 30 сек?</p>
+            <p class="work__text">Размещение в ВК/ТГ.</p>
+            <p class="work__text">Текст и подача в стиле агиток Маяковского, чтобы зуммерам зашло, как "прикольное ретро". Предлагаю Маяковского отрисовывать его в современной одежде.</p>
+          </div>
+          <div class="work__brief-img work__brief-stack" data-ratio="0.747">
+            <img src="assets/mayakovski-ref1.jpg" width="682" height="406" alt="Пример из ТЗ: Маяковский в современной одежде" loading="lazy">
+            <img src="assets/mayakovski-ref2.jpg" width="783" height="582" alt="Пример из ТЗ: исторические агитки" loading="lazy">
+          </div>
+        </div>
+
+        <p class="work__text">Сначала я сделала анимацию короткого отрывка, чтобы согласовать стилистику</p>
+
+        <div class="work__row">
+          <img src="assets/mayakovski5.png" width="1058" height="848" alt="Скрин переписки с правками" loading="lazy">
+        </div>
+
+        <p class="work__text">После нескольких правок сделала финальный вариант: с аудиоозвучкой и без нее. Выбрали тишину.</p>
+
+        <video class="work__video" src="assets/mayakovski2.mp4" width="712" height="614" data-autoplay muted loop playsinline preload="none" aria-label="Финальный вариант анимации"></video>
+
+        <p class="work__date">август 2025</p>
+      </article>
+    </template>
+
+    <template id="detail-anim8">
+      <article class="work">
+        <!-- Вертикальное видео (1080×1920) во всю ширину окна — Алеся так решила:
+             целиком оно не помещается, досматривают прокруткой. -->
+        <video class="work__video" src="assets/anim8.mp4" width="1080" height="1920" data-autoplay muted loop playsinline preload="none" aria-label="Анимация для Банка России"></video>
+
+        <p class="work__label">Анимация для поста агентства</p>
+
+        <!-- ТЗ слева, справа видео с ОТП на серой плашке: одно вертикальное видео было бы
+             слишком узким столбиком, плашка делает его почти квадратным. data-ratio —
+             пропорции плашки, по ним initBriefs подгоняет её высоту к тексту. -->
+        <div class="work__brief">
+          <div class="work__brief-text">
+            <p class="work__label">ТЗ</p>
+            <p class="work__text">Нам нужно сделать что-то такое же, но с лого Банка России. Возможно, изменить летающие элементы и оттенки (взять из гайдлайнов банка). Чтобы окружение осталось, как в отп, но добавилось несколько фишек банка россии.</p>
+            <p class="work__text">Видео с Отп банком справа – также моя анимация</p>
+          </div>
+          <div class="work__brief-img work__brief-plate" data-ratio="1.08">
+            <video src="assets/otp.mp4" data-autoplay data-sound muted loop playsinline preload="none" aria-label="Анимация для ОТП банка"></video>
+          </div>
+        </div>
+
+        <p class="work__text">Я сделала зацикленную анимацию, отражающую кейс Банка России. Абстракция летающих объектов из портала. Собирала в After Effects. Объекты брала со стоков.</p>
+
+        <video class="work__video" src="assets/bank-rossii.mp4" width="922" height="638" data-autoplay muted loop playsinline preload="none" aria-label="Процесс сборки анимации в After Effects"></video>
+
+        <p class="work__date">ноябрь 2025</p>
+      </article>
+    </template>
+
+  </section>

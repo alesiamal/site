@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>алеся мал — графический дизайнер</title>
+<!-- Иконка во вкладке: маскот на фирменном синем, скруглённая плашка. Синяя подложка
+     не для красоты — сам маскот чёрный, и на прозрачном фоне он почти исчезал бы в
+     тёмной теме браузера, где полоса вкладок тёмная. Синий держит контраст и в
+     тёмной, и в светлой теме. Проверялись и варианты «только голова»: на 16px черты
+     лица пропадают и остаётся бесформенное пятно, тогда как целая фигурка узнаётся
+     по силуэту — поэтому фигурка целиком.
+     Наличие явного rel="icon" заодно убирает запрос к /favicon.ico, который до этого
+     стабильно отдавал 404 на каждой загрузке. -->
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<!-- Для «добавить на главный экран» на iOS. 120px, а не привычные 180: исходник
+     assets/maskot.png всего 72×72, и растягивать его сильнее — значит отдавать мыло. -->
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<!-- Preload'ы трёх начертаний, из которых состоит первый экран: Soledago (заголовок
+     "ЗАИСЬ"), Moula-Medium ("скоро будет", "алеся мал", заголовки категорий) и
+     Moula-Thin (подписи вокруг hero, текст в about). Без preload браузер узнаёт о
+     них только после разбора style.css и первой раскладки — с preload он начинает
+     качать их сразу при парсинге <head>, параллельно с CSS и include'ами.
+     crossorigin обязателен даже для своего же домена: шрифты всегда грузятся в
+     CORS-режиме, и без атрибута браузер скачает файл ВТОРОЙ раз вместо переиспользования.
+     Moula-Regular и Moula-Bold сознательно не в списке — они нужны только ниже
+     первого экрана (карточки, модалки, плашка навигации) и догрузятся сами. -->
+<link rel="preload" href="assets/fonts/Soledago.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/Moula-Medium.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/Moula-Thin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-glow" aria-hidden="true"></div>
+
+<div data-include="partials/header.html"></div>
+
+<main id="top">
+  <div data-include="views/hero.html"></div>
+  <div data-include="views/about.html"></div>
+  <div data-include="views/portfolio-digital.html"></div>
+  <div data-include="views/portfolio-print.html"></div>
+</main>
+
+<div data-include="partials/footer.html"></div>
+
+<div data-include="modals/modal-work.html"></div>
+<div data-include="modals/modal-author.html"></div>
+<div data-include="modals/modal-order.html"></div>
+
+<!-- Английская версия: словарь и сам переключатель. Обычными синхронными
+     тегами и до include.js — к моменту, когда включения соберутся, I18N уже
+     существует, и include.js зовёт его до показа страницы. -->
+<script src="js/i18n-en.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/include.js" data-main="js/pointer.js, js/main.js"></script>
+<!-- Живой фон: паттерн + искажение вокруг курсора. Отдельным файлом и без defer —
+     ему не нужны ни include'ы, ни шрифты, и чем раньше он начнёт грузить паттерн,
+     тем раньше фон оживёт. Сам скрипт выходит молча там, где эффект не нужен
+     (телефон, нет WebGL, включено «меньше движения»). -->
+<script src="js/bgfx.js"></script>
+
+</body>
+</html>

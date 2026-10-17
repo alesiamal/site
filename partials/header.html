@@ -1,0 +1,20 @@
+<header class="site-header">
+  <div class="logo-wrap">
+    <a href="#top" class="logo"><img src="assets/logo.png" alt="alesiamal_" class="logo__img"></a>
+    <nav class="logo-nav" aria-label="Разделы сайта">
+      <!-- Подсветку текущего пункта ставит include.js (markActiveNav): шапка одна на
+           все страницы, и вписанный руками is-active застрял бы на портфолио. -->
+      <a href="index.html" class="logo-nav__item">портфолио</a>
+      <div class="logo-nav__divider"></div>
+      <a href="shop.html" class="logo-nav__item">магазин</a>
+      <!-- Переключатель языка. Обработчик вешает js/i18n.js: выбор запоминается в
+           localStorage и страница перезагружается уже переведённой (словарь —
+           js/i18n-en.js). Текущий язык он же помечает классом is-current: в разметке
+           отмечен «ru» — это состояние по умолчанию, если скрипт не отработал. -->
+      <div class="logo-nav__lang">
+        <button type="button" class="logo-nav__lang-btn">en</button>
+        <button type="button" class="logo-nav__lang-btn is-current" aria-current="true">ru</button>
+      </div>
+    </nav>
+  </div>
+</header>

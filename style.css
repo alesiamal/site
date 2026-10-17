@@ -1,0 +1,2105 @@
+/* ---------- FONTS ---------- */
+/* Только .woff2 — и только те файлы, что реально лежат в assets/fonts/.
+   woff2 понимают все браузеры с 2016 года, так что список запасных форматов не нужен,
+   а он и вреден: раньше в каждом блоке перечислялись .woff2/.woff/.otf/.ttf, из
+   которых существовали одни .otf, и браузер на каждой загрузке тратил два полных
+   round-trip'а на 404, прежде чем добраться до рабочего файла. Это и было главной
+   причиной вспышки системных шрифтов. НЕ добавляй сюда формат, не положив сначала
+   сам файл в папку.
+
+   Переход с .otf на .woff2 ужал критичные для первого экрана начертания
+   с 253KB до 82KB — примерно втрое. */
+
+/* font-display: block, а не swap. swap означает "рисуй текст фолбэком сразу,
+   перерисуешь, когда доедет настоящий шрифт" — то есть ровно та вспышка, которую мы
+   убираем. block вместо этого держит текст неотрисованным короткий период, и он
+   появляется уже правильной гарнитурой. Вместе с preload'ами в index.html и гейтом
+   показа в js/include.js этот период заканчивается раньше, чем на экране вообще
+   что-то появляется. */
+
+@font-face {
+  font-family: 'Moula';
+  src: url('assets/fonts/Moula-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Moula';
+  src: url('assets/fonts/Moula-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Moula';
+  src: url('assets/fonts/Moula-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Moula';
+  src: url('assets/fonts/Moula-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Moula-Black (800/900) намеренно НЕ объявлен и его файла в проекте больше нет:
+   после переезда .hero__title на Soledago ни одно правило не ставит эти веса.
+   Если понадобится — экспортируй Moula-Black.woff2 в assets/fonts/ и верни
+   @font-face сюда. */
+
+@font-face {
+  font-family: 'Soledago';
+  src: url('assets/fonts/Soledago.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+/* ---------- REVEAL GATE ---------- */
+/* Страница не показывается, пока js/include.js не подставит все include'ы и не
+   дождётся критичных шрифтов — тогда он вешает .fonts-ready на <html>.
+   Смысл: сайт и так пустой до resolve'а fetch'ей в include.js, так что скрывать
+   уже нечего — мы лишь не даём успеть отрисовать первый кадр системным шрифтом.
+
+   visibility, а НЕ display:none и не opacity — принципиально: при visibility:hidden
+   раскладка честно считается, поэтому initDodge/initAboutWordGlow/initHeroLetterDodge
+   в main.js меряют getBoundingClientRect на реальных позициях. С display:none все
+   размеры схлопнулись бы в нули и весь кэш rest-позиций уехал бы.
+
+   Предохранитель: если шрифт не доедет (404, оффлайн), include.js всё равно снимет
+   гейт по таймауту — страница не должна оставаться невидимой из-за шрифта. */
+html:not(.fonts-ready) body {
+  visibility: hidden;
+}
+
+html.fonts-ready body {
+  animation: pageReveal 0.25s ease-out;
+}
+
+@keyframes pageReveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+:root {
+  --red: #ff2d2d;
+  --blue: #2b46ff;
+  /* Muted blue for the two hero shapes — same hue family as --blue, dialled well
+     back so they read as decoration beside the letters instead of competing with
+     them (they used to be --green). */
+  --blue-soft: #8ba7f0;
+  --green: #a7f77e;
+  --green-soft: #d4feb8;
+  --ink: #1b1b26;
+  --gray: #6b6b7a;
+  /* Подписи вокруг hero («всё», «<3», «портфолио»…). Были светло-серые, фоном; Алеся
+     попросила чёрные — тот же чёрный, что у заголовка «ЗАИСЬ». */
+  --gray-label: #000000;
+  --bg: #ffffff;
+  --radius: 7px;
+  /* Скругление карточек работ и фото в about — они всегда меняются вместе, поэтому
+     держатся на своей переменной, отдельной от --radius (её продолжают использовать
+     кнопка "смотреть ещё" и медиа в модалке, их скругление не трогаем). */
+  --radius-card: 20px;
+  --radius-btn: 18px;
+  --container: 1180px;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  overscroll-behavior-y: none;
+  /* Stops mobile Safari/Chrome from auto-boosting font sizes on text blocks it judges
+     too small for the viewport — that inflation happens outside any CSS value we set,
+     so it can silently break an em-based layout (like the hero title) on a real phone
+     even though it measures correctly here. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  /* Фон всего сайта — бесшовный паттерн (assets/pattern.svg, плитка 2000×2000).
+     background-size: 100% auto растягивает плитку ровно на ширину страницы, а
+     repeat-y ставит копии друг под другом — шва не видно, паттерн бесшовный.
+     Цвет под ним остаётся на случай, если файл не загрузится. */
+  background: var(--bg) url('assets/pattern.svg') repeat-y top center;
+  background-size: 100% auto;
+  color: var(--ink);
+  font-family: 'Moula', 'Nunito', sans-serif;
+  line-height: 0.9;
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+  position: relative;
+}
+
+img { max-width: 100%; display: block; }
+
+a { color: inherit; text-decoration: none; }
+
+/* ---------- BACKGROUND GLOW ---------- */
+/* Height is synced to the page's real scrollHeight via JS (see index.html) so the
+   glow always reaches the bottom without ever adding extra blank scroll space. */
+/* Холст живого фона (js/bgfx.js): прибит к окну, лежит под всей страницей и не ловит
+   курсор. Пока он работает, картинку у body выключаем — иначе паттерн рисовался бы
+   дважды, и статическая копия просвечивала бы сквозь искажения. */
+.bgfx {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  pointer-events: none;
+}
+
+html.bgfx-on body {
+  background-image: none;
+}
+
+.bg-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2200px;
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+  filter: blur(10px);
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(circle, transparent 0%, transparent 58%, rgba(178, 178, 188, 0.8) 66%, rgba(178, 178, 188, 0.65) 72%, transparent 100%),
+    radial-gradient(circle, transparent 0%, transparent 55%, rgba(199, 199, 208, 0.7) 64%, rgba(199, 199, 208, 0.5) 71%, transparent 80%),
+    radial-gradient(circle, transparent 0%, transparent 60%, rgba(178, 178, 188, 0.75) 67%, rgba(178, 178, 188, 0.6) 73%, transparent 82%),
+    radial-gradient(circle, transparent 0%, transparent 56%, rgba(199, 199, 208, 0.65) 65%, rgba(199, 199, 208, 0.45) 72%, transparent 80%),
+    radial-gradient(circle, transparent 0%, transparent 58%, rgba(178, 178, 188, 0.75) 66%, rgba(178, 178, 188, 0.6) 72%, transparent 81%),
+    radial-gradient(circle, transparent 0%, transparent 54%, rgba(199, 199, 208, 0.65) 63%, rgba(199, 199, 208, 0.45) 71%, transparent 80%),
+    radial-gradient(circle, transparent 0%, transparent 60%, rgba(178, 178, 188, 0.7) 67%, rgba(178, 178, 188, 0.55) 73%, transparent 82%),
+    radial-gradient(circle, transparent 0%, transparent 55%, rgba(199, 199, 208, 0.65) 64%, rgba(199, 199, 208, 0.45) 71%, transparent 80%),
+    radial-gradient(circle, transparent 0%, transparent 58%, rgba(178, 178, 188, 0.7) 66%, rgba(178, 178, 188, 0.55) 72%, transparent 81%);
+  background-size:
+    min(90vw, 900px) min(80vw, 800px),
+    min(42vw, 480px) min(42vw, 480px),
+    min(80vw, 1000px) min(140vw, 1000px),
+    min(36vw, 400px) min(36vw, 400px),
+    min(70vw, 1200px) min(120vw, 1200px),
+    min(90vw, 460px) min(100vw, 460px),
+    min(100vw, 1000px) min(100vw, 1000px),
+    min(38vw, 420px) min(38vw, 420px),
+    min(90vw, 740px) min(90vw, 740px);
+  background-position:
+    900% -5%,
+    200% 12%,
+    -205% 18%,
+    -100% 32%,
+    308% 41%,
+    -402% 54%,
+    900% 85%,
+    -105% 76%,
+    945% 120%;
+}
+
+.site-header,
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* .site-header, main and .site-footer are siblings that each start their own stacking
+   context (position:relative) — at equal z-index they stack in DOM order, so main
+   (the hero section) would otherwise paint over anything in the header, nav panel
+   included. Lifting the header above it is what lets the panel sit in front of hero. */
+.site-header {
+  z-index: 2;
+}
+
+/* ---------- HEADER ---------- */
+.site-header {
+  display: flex;
+  justify-content: center;
+  padding: 28px 20px 0;
+}
+
+/* Padding + matching negative margin grow the hoverable area around the logo without
+   affecting layout, so the nav panel stays open even while the logo is off dodging
+   the cursor somewhere inside its own 15px dodge zone. */
+.logo-wrap {
+  position: relative;
+  display: inline-block;
+  padding: 20px;
+  margin: -20px;
+}
+
+/* Needs its own stacking position (not just the transform the dodge effect applies)
+   so an explicit z-index above the panel's actually takes effect — logo stays on
+   top of the panel even though the panel now extends up underneath it. */
+.logo {
+  position: relative;
+  z-index: 5;
+  display: inline-block;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.logo__img {
+  height: clamp(28px, 4vw, 40px);
+  width: auto;
+}
+
+/* The panel itself is a sibling of .logo, not a child — so the logo's own dodge
+   transform never touches it and it stays put. It's stretched up to start at the
+   same top edge as .logo-wrap's own (invisible, padded) box, with enough top padding
+   reserved to sit behind the logo — the logo (higher z-index) then visually reads as
+   sitting on top of the card's upper edge, with the nav items below it. */
+.logo-nav {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  min-width: 170px;
+  padding: 70px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: var(--radius-btn);
+  box-shadow: 0 16px 40px rgba(15, 15, 26, 0.16);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(-6px);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+  z-index: 4;
+}
+
+.logo-wrap:hover .logo-nav,
+.logo-wrap:focus-within .logo-nav,
+.logo-wrap.is-nav-open .logo-nav {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.logo-nav__item {
+  display: block;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  text-align: center;
+  color: var(--gray);
+  transition: background 0.2s ease;
+}
+
+.logo-nav__item:hover {
+  background: #f1f1f4;
+}
+
+.logo-nav__item.is-active {
+  color: var(--ink);
+}
+
+a.logo-nav__item:hover {
+  color: var(--ink);
+}
+
+/* Модификатор «скоро» остался от времён, когда магазина ещё не было: теперь оба
+   пункта — обычные ссылки. Держим правило на случай будущих разделов в работе. */
+.logo-nav__item--soon {
+  color: #c3c4cc;
+  font-weight: 100;
+  cursor: default;
+}
+
+.logo-nav__divider {
+  height: 2px;
+  margin: 4px 10px;
+  background: #eceef2;
+}
+
+/* Переключатель языка — на месте бывших разделителя и пункта "квиз".
+   margin-top: 10px не случайный: убранные отсюда разделитель (2px + по 4px полей) и
+   пункт (33.5px) занимали ровно 43.5px, столько же занимает эта строка вместе со
+   своим отступом. Окошко из-за замены не изменило высоту — это было требованием.
+   Будешь менять отступ или padding кнопок — панель поедет. */
+.logo-nav__lang {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+/* Геометрия и типографика copy-paste с .logo-nav__item: кнопки обязаны читаться как
+   ещё один пункт того же списка, а не как чужой элемент управления. Отсюда же
+   сброс всего, что браузер навязывает <button>: своя рамка, фон и шрифт. */
+.logo-nav__lang-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  /* Обязательно. У <button> в браузерной таблице стилей прописан `font` одной
+     строкой, а шорткат заодно сбрасывает line-height в normal — наследование
+     рвётся, кнопка становится на 2.5px выше пункта меню, и окошко подрастает. */
+  line-height: inherit;
+  text-align: center;
+  color: var(--gray);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.logo-nav__lang-btn:hover {
+  background: #f1f1f4;
+  color: var(--ink);
+}
+
+/* Выбранный язык сидит на серой плашке. Тот же #f1f1f4, что и у ховера пунктов
+   меню, — в проекте это единственный "подложечный" серый, заводить второй незачем. */
+.logo-nav__lang-btn.is-current {
+  background: #f1f1f4;
+  color: var(--ink);
+  cursor: default;
+}
+
+/* ---------- HERO ---------- */
+.hero {
+  position: relative;
+  padding: 60px 20px 30px;
+  text-align: center;
+}
+
+.hero__inner {
+  max-width: var(--container);
+  margin: 0 auto;
+}
+
+.hero__eyebrow {
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 500;
+  color: #000000;
+  font-size: clamp(40px, 7.8vw, 113px);
+  margin: 0 0 8px;
+}
+
+.hero__title {
+  font-family: 'Soledago', 'Moula', 'Unbounded', sans-serif;
+  font-weight: 400;
+  color: var(--blue);
+  /* Soledago's glyphs are much wider than Moula's at the same font-size, so the
+     vw formula is scaled down to keep "ЗА◆●ИСЬ" occupying roughly the same share
+     of the viewport width it did before the typeface swap. */
+  font-size: clamp(52px, 16.7vw, 241px);
+  letter-spacing: 0;
+  line-height: 0.9;
+  margin: 0;
+  transform: translateX(9px);
+}
+
+/* Shrink-wraps its content instead of stretching to fill .hero__title's box, so its
+   own width scales 1:1 with font-size at every breakpoint. .hero__title itself
+   stretches to its container's width (independent of font-size), so anything
+   positioned relative to IT (like the mascot's waypoints) would drift between
+   breakpoints as the ratio of container-width to font-size changes. */
+.hero__title-inner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.04em;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+/* --dodge-x is written by the hero letter/shape "escape" interaction (see
+   initHeroLetterDodge in main.js) — folding it into each element's own transform
+   instead of overwriting .style.transform directly means it composes cleanly with
+   whatever static offset (or spin animation) that element already has. */
+.hero__word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.hero__letter {
+  display: inline-block;
+  transform: translateX(var(--dodge-x, 0px));
+  transition: transform 0.2s ease;
+}
+
+/* letter-spacing on .hero__title doesn't bridge the gap between separate sibling
+   elements (only within a single text run), so splitting "ЗА"/"ИСЬ" into individual
+   .hero__letter spans lost that spacing — replaced here explicitly. Not applied to
+   the last letter in each word: that boundary is already spaced by .hero__title-inner's
+   own flex gap. */
+.hero__letter:not(:last-child) {
+  margin-right: 0.01em;
+}
+
+/* ---------- HERO SATELLITE LABELS ---------- */
+/* "всё" / "<3" above the word, "портфолио" / "дизайн" / "алеся мал" below it.
+   They're absolutely positioned children of .hero__title-inner — the same anchor the
+   mascot uses — precisely because that box shrink-wraps "ЗА◆●ИСЬ" and scales 1:1 with
+   font-size. That's what keeps each label locked to the word's own left/centre/right
+   edge at every breakpoint, instead of drifting as the container-to-font-size ratio
+   changes (see the note on .hero__title-inner above). Their own font-size is a
+   fraction of the title's, so every offset written in *their* em scales too.
+   Absolutely positioned children sit outside flex layout, so they never widen the
+   inner box or disturb the letters. */
+.hero__label {
+  position: absolute;
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 100;
+  font-size: 0.15em;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--gray-label);
+  white-space: nowrap;
+  /* Deliberately NOT pointer-events:none any more — these five carry their own hover
+     state. They sit entirely above or below .hero__title-inner's box (bottom:100% /
+     top:100%), never over the letters or shapes, so taking pointer events back does
+     not steal a single click from them. */
+  cursor: default;
+  transition: color 0.18s ease-out;
+  user-select: none;
+}
+
+/* Hover only — no JS. Unlike the about paragraphs (where the nearest word wins and
+   that needs distance maths on mousemove), these are five separate whole words, so
+   plain :hover is exactly the right tool. Same colour and same 0.18s easing as
+   .about__word.is-lit, so the two red highlights read as one idea. */
+.hero__label:hover {
+  color: var(--red);
+}
+
+/* Top row sits level with .hero__eyebrow ("скоро будет"), which lives outside this
+   box — hence the offset above the title rather than a shared flex row: the eyebrow
+   is centred on the page while these two must hug the *word's* edges.
+   Модификаторы названы по месту (tl — верх слева, bc — низ по центру), а не по слову:
+   слова вокруг заголовка Алеся меняет, а позиции остаются. */
+.hero__label--tl { left: 0; bottom: 100%; margin-bottom: 1.22em; }
+.hero__label--tr { right: 0; bottom: 100%; margin-bottom: 1.22em; }
+
+.hero__label--bl { left: 0; top: 100%; margin-top: 0.5em; }
+.hero__label--bc { left: 50%; transform: translateX(-50%); top: 100%; margin-top: 0.5em; }
+.hero__label--br { right: 0; top: 100%; margin-top: 0.5em; }
+/* ---------- HERO DIVIDER ---------- */
+/* Рисованная линия, закрывающая hero. Ширина 92% повторяет отступы линии от краёв
+   страницы в макете. */
+.hero__line {
+  margin: clamp(90px, 16vw, 230px) auto 0;
+  width: 92%;
+}
+
+/* overflow:visible — обязательно. У <svg> браузерный дефолт это overflow:hidden, а
+   бокс здесь очень низкий (viewBox 1674×73, то есть ~4% высоты от ширины). Притянутая
+   к курсору линия сразу вылезала бы за верхнюю границу и обрезалась. Видимое
+   переполнение безопасно: линия тонкая и уезжает максимум на REACH_PX (см. main.js).
+   pointer-events:none — курсор должен спокойно проходить сквозь бокс SVG, иначе он
+   перехватывал бы наведение на широкой невидимой полосе поперёк всей страницы. */
+.hero__line-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* vector-effect:non-scaling-stroke в разметке держит толщину в экранных пикселях,
+   поэтому 1.1 здесь — это ровно 1.1px на любой ширине, а не доля user units. */
+.hero__line-path {
+  stroke: #c9c9d2;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  transition: stroke 0.3s ease;
+}
+
+/* Пока линия притянута, она чуть темнеет — маленький сигнал, что её "держат". */
+.hero__line-path.is-pulled {
+  stroke: #9a9aa6;
+}
+
+.deco {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 0.55em;
+  height: 0.55em;
+  cursor: pointer;
+  /* Статический сдвиг фигуры живёт в --deco-nudge, а не вписан в transform у каждой
+     фигуры отдельно. Так значение задаётся ровно в одном месте и не может разъехаться
+     с keyframes спина — раньше смещение было продублировано в четырёх местах, и любая
+     правка требовала синхронно поменять их все, иначе фигура прыгала вбок при клике. */
+  transform: translateX(calc(var(--deco-nudge, 0em) + var(--dodge-x, 0px)));
+  transition: transform 0.2s ease;
+}
+
+/* Фигуры сдвинуты навстречу друг другу, чтобы три просвета — "А → левая фигура",
+   "между фигурами" и "правая фигура → И" — читались одинаковыми.
+
+   Считалось по видимой краске, а не по боксам: у каждого PNG внутри холста свои поля,
+   и на глаз воспринимаются именно границы рисунка. До правки средние просветы были
+   0.008 / 0.210 / 0.050em — фигуры почти липли к буквам, а между собой зияли.
+
+   Ромбу расчёт давал 0.051em, но на глаз он уезжал слишком вправо (у ромба краска
+   почти по центру холста, а у звезды и треугольника заметно слева — одним общим
+   сдвигом все три кадра карусели идеально не выровнять). Оставлено 0.03em как
+   компромисс между кадрами.
+
+   Если будешь менять .shape { width } или сами PNG (другие поля внутри холста) —
+   пересчитывай заново, значения завязаны на конкретную геометрию рисунков. */
+.deco--diamond { --deco-nudge: 0.03em; }
+.deco--circle { --deco-nudge: -0.039em; }
+
+/* Английская версия: заголовок читается F (.) KIN G (.) — вторая фигура стоит в конце
+   строки, а не в середине, как по-русски. В разметке обе фигуры соседи, поэтому вторую
+   достаточно отправить в конец порядком во флексе: переставлять узлы в DOM ради одного
+   языка не нужно, у остальных элементов order остаётся 0 и порядок сохраняется.
+   Слова приходят из словаря (js/i18n-en.js), lang="en" ставит сам переводчик. */
+html[lang="en"] .deco--circle {
+  order: 1;
+}
+
+/* Стартовое место маскота на английской версии. Настоящая таблица его прыжков лежит
+   в js/main.js (MASCOT_WAYPOINTS_EN) и перебивает это значение сразу на старте —
+   здесь дубль первой строки таблицы на тот кадр, пока скрипт ещё не отработал.
+   Правишь таблицу — поправь заодно и эту строку, чтобы фигурка не прыгала при
+   загрузке. */
+html[lang="en"] .hero__mascot {
+  left: 3.1em;
+}
+
+/* Rotation is folded into the same `transform` list as the static offset (rather than
+   the separate `rotate` property) so it spins around its own center: mixing a static
+   `transform` with the standalone `rotate` property makes browsers apply `rotate`
+   *outside* the static transform, orbiting it around the pre-offset origin instead of
+   spinning it in place. Одних keyframes хватает на обе фигуры — сдвиг подставляется
+   из --deco-nudge. */
+.deco.is-spinning {
+  animation: decoSpin 1s ease;
+}
+
+@keyframes decoSpin {
+  from { transform: translateX(calc(var(--deco-nudge, 0em) + var(--dodge-x, 0px))) rotate(0deg); }
+  to { transform: translateX(calc(var(--deco-nudge, 0em) + var(--dodge-x, 0px))) rotate(360deg); }
+}
+
+/* Position is in em relative to .hero__title-inner (which hugs "ЗАИСЬ" tightly and
+   scales 1:1 with font-size), so the mascot keeps the exact same spot relative to the
+   text at every breakpoint. Left/top here is waypoint A (see MASCOT_WAYPOINTS in
+   main.js); JS swaps these on each hover/tap. --dodge-x is mirrored from whichever
+   letter/shape the mascot is currently sitting on (see initHeroLetterDodge), so it
+   rides along when that anchor dodges instead of being left behind. */
+.hero__mascot {
+  position: absolute;
+  z-index: 3;
+  left: 3.1em;
+  top: 0.1em;
+  width: calc(0.5em / 1.5);
+  height: auto;
+  cursor: pointer;
+  transform: translateX(var(--dodge-x, 0px)) rotate(var(--mascot-rotate, 0deg));
+  /* Matches .hero__letter/.deco's own transition exactly — without it the mascot
+     snapped to each --dodge-x update instantly while its anchor eased into position
+     over 0.2s, so they visibly drifted apart mid-motion instead of reading as one piece. */
+  transition: transform 0.2s ease;
+}
+
+/* Шесть фигур — это нарисованные персонажи (assets/{diamond,star,triangle,ring,
+   square,cross}.png), а не CSS-формы. Раньше они рисовались через clip-path/border
+   заливкой var(--blue-soft); теперь цвет живёт внутри самих PNG.
+
+   ВАЖНО про размеры: все шесть экспортированы на одном общем холсте 1547×1666, и
+   внутри этого холста у каждой фигуры свои поля (у кольца рисунок занимает 100%
+   ширины, у треугольника — 62%). Это НЕ дефект экспорта, а заданные пропорции:
+   фигуры и должны быть разного размера относительно друг друга. Поэтому все шесть
+   рисуются одинаковым боксом по общему холсту, а не подгоняются каждая под свою
+   видимую часть — иначе относительные размеры, которые нарисованы, потерялись бы,
+   и при переключении фигуры прыгали бы. Не «выравнивай» их. */
+.shape {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  /* em здесь — размер шрифта .hero__title, поэтому фигуры масштабируются вместе с
+     надписью, как и всё остальное в hero. Холст шире видимого рисунка, так что
+     0.72em общего холста даёт фигуры примерно того же размера, каким был старый
+     clip-path в боксе 0.55em. */
+  width: 0.72em;
+  height: auto;
+  /* Тряска (initShapeShake в main.js) подмешивается сюда через переменные, а не
+     перезаписью transform: центровка translate(-50%,-50%) должна остаться на месте. */
+  transform: translate(-50%, -50%)
+             translate(var(--shake-x, 0em), var(--shake-y, 0em))
+             rotate(var(--shake-r, 0deg));
+  /* Глобальное правило img { max-width: 100% } иначе зажало бы картинку шириной
+     .deco (0.55em) и фигуры вышли бы мельче задуманного. */
+  max-width: none;
+  opacity: 0;
+  /* Цвет въезжает плавно, чтобы покраснение читалось как следствие тряски,
+     а не как мгновенная подмена картинки. */
+  transition: filter 0.45s ease;
+  animation: shapeCycle 1.5s linear infinite;
+}
+
+/* Задержки задают карусель: в каждой .deco три фигуры сменяют друг друга. */
+
+/* Раскраска в красный на пике тряски (класс вешает initShapeShake в main.js).
+   Фигуры — растровые PNG со своим цветом внутри, поэтому перекрасить их через color
+   нельзя. hue-rotate поворачивает синее тело (оттенок 234°) в красный, а чёрные
+   глаза и улыбка остаются чёрными: у них нулевая насыщенность, и поворот оттенка их
+   не трогает. Это и есть причина выбрать фильтр, а не маску с заливкой — маска
+   залила бы фигуру сплошняком и стёрла бы рисунок лица.
+   112deg выбран на глаз из подобранного ряда — чуть в розовую сторону от чистого
+   красного, теплее и мягче, чем 126deg (тот уходит в томатный). */
+.deco.is-hot .shape {
+  filter: hue-rotate(112deg);
+}
+.shape--star { animation-delay: 0s; }
+.shape--triangle { animation-delay: 0.5s; }
+.shape--diamond { animation-delay: 1s; }
+
+.shape--ring { animation-delay: 0.25s; z-index: 2; }
+.shape--square { animation-delay: 0.75s; }
+.shape--cross { animation-delay: 1.25s; }
+
+@keyframes shapeCycle {
+  0% { opacity: 1; }
+  36% { opacity: 1; }
+  36.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* ---------- ABOUT ---------- */
+.about {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 40px 20px 100px;
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 60px;
+  align-items: stretch;
+}
+
+.about__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.about__bio {
+  margin-top: auto;
+}
+
+/* Скругление и обрезка переехали с картинки на обёртку: без overflow:hidden
+   приближенное фото вылезало бы за пределы своей ячейки грида. Картинка наследует
+   радиус обёртки, поэтому обе анимируются синхронно, одной строкой. */
+.about__photo {
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  transition: border-radius 0.35s ease;
+}
+
+.about__photo:hover {
+  border-radius: 0;
+}
+
+/* Фото зеркалит поведение карточек работ: у тех покой = scale(1), наведение =
+   scale(1.07) — приближение. Здесь наоборот: покой уже приближен, а наведение
+   возвращает к 1, то есть отдаляет. Ниже 1 уходить нельзя — картинка ровно
+   заполняет обёртку, и при масштабе меньше единицы по краям полезет фон. */
+.about__photo img {
+  border-radius: inherit;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  object-position: 27% center;
+  transform: scale(1.08);
+  transition: transform 0.5s ease;
+}
+
+.about__photo:hover img {
+  transform: scale(1);
+}
+
+.about__name {
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 500;
+  color: #024AF2;
+  font-size: clamp(20px, 2.4vw, 28px);
+  margin: 0 0 6px;
+  transition: transform 0.2s ease;
+}
+
+/* .about__word — одно слово: и неразрывная обёртка под перенос строк, и единица
+   подсветки. white-space:nowrap не даёт слову разорваться посередине, а обычные
+   пробелы, которые splitIntoWords() оставляет между спанами, остаются нормальными
+   точками переноса — текст перетекает ровно как раньше.
+
+   Слова не двигаются вообще: initAboutWordGlow (js/main.js) вешает .is-lit на то
+   слово, на котором стоит курсор, и анимируется только цвет. display:inline здесь
+   намеренный — трансформа больше нет, inline-block ничему не нужен, а обычные inline
+   спаны гарантированно не трогают межстрочный интервал и нижнее выравнивание блока
+   about (см. RULES.md → about).
+
+   Задержка 0.5s стоит в базовом правиле, а не в .is-lit, и это вся механика
+   «гаснет с задержкой» — таймеров в JS нет. Транзишен всегда берётся у состояния, В
+   КОТОРОЕ переходим: класс появился → работает правило .is-lit с delay 0 (загорается
+   сразу), класс снят → работает базовое правило с delay 0.5s (гаснет через полсекунды
+   после ухода курсора). */
+.about__word {
+  display: inline;
+  white-space: nowrap;
+  /* Длительность достаточно короткая, чтобы под движущимся курсором ощущаться
+     мгновенной, и достаточно длинная, чтобы слово гасло плавно, а не щёлкало. */
+  transition: color 0.18s ease-out 0.5s;
+}
+
+.about__word.is-lit {
+  color: var(--red);
+  transition-delay: 0s;
+}
+
+.about__role {
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 100;
+  color: var(--blue);
+  font-size: clamp(20px, 2.4vw, 28px);
+  margin: 0 0 40px;
+}
+
+.about__bio p {
+  color: var(--blue);
+  font-size: clamp(20px, 2.4vw, 28px);
+  line-height: 0.9;
+  font-weight: 100;
+  margin: 0 0 20px;
+}
+
+.about__bio > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Выделенные слова в био. 500 (Moula Medium), а не 700: рядом с Thin-текстом это уже
+   очень заметный контраст, а Medium — тот же вес, что у имени и заголовков категорий,
+   то есть выделение остаётся внутри уже принятой в проекте типографской шкалы.
+   font-weight ставится на <b>, а слова внутри наследуют его — сплиттер сохраняет
+   вложенную разметку (см. splitIntoWords в main.js). */
+.about__em {
+  font-weight: 500;
+}
+
+
+.about__resume {
+  display: inline-block;
+  margin-top: 0;
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 100;
+  font-size: clamp(20px, 2.4vw, 28px);
+  color: var(--red);
+  text-decoration: underline;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.about__resume:hover {
+  opacity: 0.75;
+}
+
+/* ---------- PORTFOLIO SECTIONS ---------- */
+.portfolio {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 20px 20px 90px;
+}
+
+.portfolio__title {
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 500;
+  color: var(--ink);
+  text-align: center;
+  font-size: clamp(20px, 2.4vw, 28px);
+  margin: 0 0 36px;
+  text-transform: lowercase;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.grid.is-collapsed .card:nth-child(n+4) {
+  display: none;
+}
+
+.card {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: #f1f1f4;
+  aspect-ratio: 1 / 1;
+  opacity: 1;
+  transition: opacity 0.4s ease, border-radius 0.35s ease;
+  cursor: pointer;
+}
+
+.card:nth-child(n+4) {
+  z-index: 1;
+}
+
+.card--fade-init {
+  opacity: 0 !important;
+  transition: none !important;
+}
+
+/* Зум инвертирован, как и скругление: в покое визуал уже приближен, наведение
+   возвращает его к 100%, то есть отдаляет. Ниже 1 уходить нельзя — картинка ровно
+   заполняет карточку, и при масштабе меньше единицы по краям полезет её фон.
+   Ровно та же механика, что у фото в about. */
+.card img,
+.card video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.07);
+  transition: transform 0.5s ease;
+}
+
+.card:hover {
+  border-radius: 0;
+}
+
+.card:hover img,
+.card:hover video {
+  transform: scale(1);
+}
+
+.card:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
+
+.card--dark { background: #10141c; }
+.card--gray { background: #8b8f99; }
+
+.card--placeholder {
+  background: #e4e5ea;
+  cursor: default;
+}
+
+.card--placeholder:hover {
+  transform: none;
+}
+
+/* Plain "card" with no img/video, so .card's shared hover rule (border-radius: 50px)
+   already rounds the border along with it — no extra transition needed here.
+   Same size as every other card in the grid (no transform/scale) — a scaled-up
+   version was tried but overlapped neighboring cards inconsistently across
+   breakpoints, so it stays uniform with the rest of the grid instead. */
+.card--cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #fff;
+  border: 2px solid var(--ink);
+  text-align: center;
+  /* Скругление углов на ховере карточка получает от общего правила .card:hover;
+     здесь добавляется только заливка, поэтому длительность взята та же (0.35s),
+     чтобы форма и цвет менялись одним движением, а не двумя разными. */
+  transition: background 0.35s ease;
+}
+
+/* Инверсия на ховере: карточка становится чёрной, надпись — белой. Правило для
+   текста завязано на ховер по .card--cta, а не по самому тексту: наводиться нужно
+   на всю карточку целиком, а текст внутри её не заполняет. */
+.card--cta:hover {
+  background: var(--ink);
+}
+
+.card__cta-text {
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 400;
+  font-size: clamp(16px, 1.8vw, 22px);
+  color: var(--ink);
+  transition: color 0.35s ease;
+}
+
+.card--cta:hover .card__cta-text {
+  color: #fff;
+}
+
+/* ---------- "СМОТРЕТЬ ЕЩЁ" BUTTON ---------- */
+.section-more {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.btn-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 40px;
+  border: 1px solid #ffffff;
+  border-radius: var(--radius);
+  /* Матовое стекло: полупрозрачная плашка + размытие того, что под ней. Размывается
+     ровно площадь кнопки, поэтому фоновый паттерн за ней уходит в дымку, а по краю
+     остаётся белая рамка — кнопка читается как стекло, а не как пятно краски. */
+  background: rgba(238, 240, 245, 0.01);
+  -webkit-backdrop-filter: blur(7px) saturate(1.2);
+  backdrop-filter: blur(7px) saturate(1.2);
+  color: var(--gray);
+  font-family: 'Moula', 'Caveat', cursive;
+  font-size: clamp(20px, 2.4vw, 28px);
+  /* На ступень жирнее тонкого Moula: на стеклянной кнопке тонкое начертание почти
+     терялось. Следующее доступное начертание после 100 — Regular. */
+  font-weight: 400;
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease, opacity 0.35s ease, transform 0.35s ease, border-radius 0.35s ease;
+}
+
+.btn-more:hover {
+  color: var(--ink);
+  background: #d7d9e0;
+  border-radius: 50px;
+}
+
+.btn-hide {
+  display: block;
+  margin: 0 auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--gray);
+  font-family: 'Moula', 'Caveat', cursive;
+  font-size: clamp(16px, 1.8vw, 20px);
+  font-weight: 100;
+  cursor: pointer;
+  transition: color 0.3s ease, opacity 0.35s ease, transform 0.35s ease;
+}
+
+.btn-hide:hover {
+  color: var(--ink);
+}
+
+.btn-more.is-leaving,
+.btn-hide.is-leaving {
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+}
+
+.btn-more[hidden],
+.btn-hide[hidden] {
+  display: none;
+}
+
+/* ---------- MODAL ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 15, 26, 0.65);
+}
+
+.modal__panel {
+  position: relative;
+  background: #fff;
+  border-radius: var(--radius-btn);
+  padding: 20px;
+  width: min(880px, 92vw);
+  max-height: 85vh;
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.3s ease;
+}
+
+.modal.is-open .modal__panel {
+  transform: translateY(0) scale(1);
+}
+
+.modal__body {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  height: min(480px, 65vh);
+  overflow: hidden;
+}
+
+.modal__media {
+  flex: 1 1 55%;
+  min-width: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* contain, а не cover — как и у видео ниже. В сетке карточки квадратные и картинки
+   намеренно обрезаются под общий ритм, но модалка — единственное место, где работу
+   можно рассмотреть целиком, и там обрезать нельзя. Особенно это важно для широких
+   работ: у постера MUSTART (544×306) квадрат съедает 44% и отрезает само слово,
+   у журнала — 33%. Пустые поля заливаются белым. */
+.modal__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #fff;
+}
+
+/* contain (not cover) so the animation is never cropped — it's shown whole, at a
+   larger size than the grid thumbnail, letterboxed against white if its aspect
+   ratio doesn't match the media box. */
+.modal__media video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #fff;
+}
+
+/* JS toggles which of the two is showing via the `hidden` attribute — these need to
+   out-specificity the rule above, otherwise `display:block` there wins and the
+   `hidden` one stays visible anyway. */
+.modal__media img[hidden],
+.modal__media video[hidden] {
+  display: none;
+}
+
+/* Same top/bottom-anchoring technique as .about__text: no justify-content, so the
+   description sits at the top by default, and .modal__date's margin-top:auto pushes
+   it down to the bottom edge — holds regardless of how long the description runs. */
+.modal__info {
+  flex: 1 1 45%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.modal__desc {
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 400;
+  color: var(--blue);
+  font-size: clamp(18px, 2vw, 22px);
+  margin: 0;
+}
+
+.modal__date {
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 100;
+  color: var(--gray);
+  font-size: clamp(14px, 1.4vw, 16px);
+  margin: auto 0 0;
+}
+
+/* ---------- Подробный разбор работы (карусель + тексты) ---------- */
+/* Обычная модалка — два столбца фиксированной высоты. Разбор устроен иначе: это
+   вертикальная лента, которая прокручивается внутри окна. Поэтому высота здесь не
+   задаётся, а ограничивается — короткий разбор займёт сколько нужно, длинный упрётся
+   в потолок и начнёт скроллиться. 40px — это padding самой панели сверху и снизу. */
+.modal__detail {
+  max-height: calc(85vh - 40px);
+  overflow-y: auto;
+  /* Прокрутка остаётся, прячется только полоса: колесо, тачпад и палец работают как
+     раньше. Заодно полоса больше не отъедает ~15px ширины у карточки карусели. */
+  scrollbar-width: none;
+}
+
+.modal__detail::-webkit-scrollbar {
+  display: none;
+}
+
+/* У разбора своё окно: светло-серый фон вместо белого и ширина, ограниченная высотой
+   экрана. Второе — прямое следствие того, что карточка карусели теперь во всю ширину:
+   она квадратная, и в окне 880px её высота (840px) не влезла бы в видимые 85vh —
+   открыл работу, а у карточки срезан низ. Ширина окна (вместе с padding по 20px)
+   не больше 85vh как раз и даёт квадрат, целиком помещающийся по высоте.
+   Серый — тот же #f1f1f4, что у плашек и ховеров по всему сайту. */
+.modal.is-detail .modal__panel {
+  background: #f1f1f4;
+  width: min(880px, 92vw, 85vh);
+}
+
+/* Обязательное правило, а не перестраховка. Браузерное [hidden] — это всего лишь
+   display:none в таблице стилей браузера, и любой display в своём CSS его перебивает.
+   У .modal__body стоит display:flex, поэтому скрытый атрибутом блок продолжал
+   рисоваться под разбором — с пустым «описание работы» и битой картинкой. */
+.modal__body[hidden],
+.modal__detail[hidden] {
+  display: none;
+}
+
+/* Текст разборов — в полтора раза мельче описания в about и на одно начертание
+   жирнее: Moula Regular вместо Thin, а выделения (.work__lead, .work__label) — Bold
+   вместо Medium. Мелкий Thin был бы совсем бледным, поэтому размер и вес меняются
+   вместе. На телефоне тот же делёж в полтора раза, 8px (см. медиазапрос ниже). */
+.work__lead,
+.work__text,
+.work__label,
+.work__date {
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-size: clamp(13.3px, 1.6vw, 18.7px);
+  line-height: 0.9;
+  font-weight: 400;
+}
+
+.work__lead,
+.work__text {
+  color: var(--blue);
+  margin: 0 0 18px;
+}
+
+.work__lead {
+  /* Выделение в разборах — 700, на одно начертание жирнее основного текста (400). */
+  font-weight: 700;
+  /* Подпись — отдельный блок, поэтому и сверху, и снизу общий шаг разбора 30px. */
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.work__text:last-child {
+  margin-bottom: 0;
+}
+
+/* Ряды картинок в разборе: пара вариантов идёт узкий + широкий, пропорции из макета. */
+/* Отступ по 30px сверху и снизу отделяет ряд картинок от текста. Соседние поля
+   схлопываются (обычный поток, не flex), поэтому между абзацем и рядом получается
+   именно 30px, а не 30 + 18 от абзаца. */
+.work__row {
+  display: flex;
+  gap: 10px;
+  /* Обязательно: по умолчанию flex растягивает картинки до высоты ряда, и та, что
+     ниже остальных, вытягивается по вертикали — пропорции файла ломаются. С
+     flex-start каждая картинка сохраняет свою форму, а ровной высоты добиваемся
+     долями ширины (--f), а не растяжением. */
+  align-items: flex-start;
+  margin: 30px 0;
+}
+
+/* Два ряда подряд — это один разворот вариантов, а не два разных блока: между ними
+   отступ такой же, как между картинками внутри ряда.
+   Обе половины правила обязательны. Соседние вертикальные поля схлопываются в
+   большее из двух, поэтому одного margin-top: 10px мало — снизу у предыдущего ряда
+   остаются свои 30px, и они выигрывают. Ужимать надо с обеих сторон. */
+.work__row:has(+ .work__row) {
+  margin-bottom: 10px;
+}
+
+.work__row + .work__row {
+  margin-top: 10px;
+}
+
+.work__row:last-child {
+  margin-bottom: 0;
+}
+
+/* Разбор может начинаться и с картинки (печатка), а не только с видео: сверху отступ
+   не нужен — .modal__detail прокручивается и не даёт полю схлопнуться. */
+.work > .work__row:first-child {
+  margin-top: 0;
+}
+
+/* ---- Элементы разбора второй работы (эмоджи): видео, кнопка, подпись, сетки ---- */
+
+/* Видео на всю ширину. width/height в разметке задают браузеру пропорции до загрузки,
+   а height: auto здесь сохраняет их при растяжении — место под видео резервируется
+   сразу, и текст под ним не прыгает, когда файл доедет. */
+.work__video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+/* Видео как самостоятельный блок разбора — общий шаг 30px, как у остальных. Без этого
+   абзац перед видео (его 18px снизу) стоял бы к нему ближе, чем текст к картинкам.
+   Только прямые дети .work: внутри .work__videos видео лежат в гриде, там поля не
+   схлопываются и раздвинули бы сетку. Первое видео разбора сверху без отступа —
+   .modal__detail прокручивается и сам не даёт полю схлопнуться, над ним была бы
+   пустая полоса. */
+.work > .work__video {
+  margin: 30px 0;
+}
+
+.work > .work__video:first-child {
+  margin-top: 0;
+}
+
+/* Квадрат со стороной во всю ширину окна для вертикального видео: высота видео равна
+   ширине окна, ширина идёт от его пропорций (width/height в разметке), по бокам поля.
+   aspect-ratio даёт квадрату определённую высоту, поэтому height: 100% у видео
+   внутри работает. Видео на всю ширину было бы 734×1305 — почти два экрана вниз. */
+.work__square {
+  aspect-ratio: 1 / 1;
+  margin: 30px 0;
+}
+
+.work__square .work__video {
+  width: auto;
+  height: 100%;
+  margin: 0 auto;
+}
+
+.work__button {
+  display: block;
+  /* Вдвое уже разбора и по центру: на всю ширину кнопка выглядела плашкой-разделителем,
+     а не кнопкой. Общий шаг разбора сверху и снизу — 30px (раньше сверху было 12px, и
+     под видео кнопка стояла ближе, чем в разборе куба, где она идёт после блока видео). */
+  width: 50%;
+  margin: 30px auto;
+  padding: 16px 20px;
+  /* Скругление как у карточек работ в сетке, а не общее 7px: кнопка живёт рядом с
+     ними и должна читаться из того же набора форм. */
+  border-radius: var(--radius-card);
+  background: var(--blue);
+  color: #fff;
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 400;
+  font-size: clamp(17px, 2vw, 21px);
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease, border-radius 0.35s ease;
+}
+
+/* Под курсором углы распрямляются — то же движение, что у карточек работ в сетке
+   (.card:hover), с тем же таймингом 0.35s. */
+.work__button:hover {
+  border-radius: 0;
+}
+
+/* Кнопка в самом конце разбора: снизу отступ не нужен, окно заканчивается на ней.
+   Сверху остаются 30px — поля с предыдущим блоком схлопываются в большее. */
+.work__button:last-child {
+  margin-bottom: 0;
+}
+
+/* Цвет под курсором не меняется — вся реакция кнопки в распрямлении углов. */
+.work__button:hover {
+  transform: translateY(-1px);
+}
+
+/* Короткая подпись к абзацу («ТЗ», «Анимация 2026 года») — прижата к нему вплотную,
+   как в макете. Сверху те же 30px, что отделяют текст от картинок: после видео
+   отступ нужен свой, а после кнопки поля схлопываются и лишнего не прибавляется. */
+/* Размер и шрифт — общие для текста разборов (см. .work__text выше). Подпись
+   отличается только начертанием: 700 против 400 у основного текста. */
+.work__label {
+  font-weight: 700;
+  color: var(--blue);
+  margin: 30px 0 4px;
+}
+
+/* Подпись «ТЗ» там, где само ТЗ — не текст, а скрины задачи: красная, как в блоке ТЗ
+   четвёртой работы, чтобы слова клиента и его материалы читались одинаково, и с тем
+   же отступом от краёв, что и сами скрины под ней. */
+.work__label--brief {
+  color: var(--red);
+  padding: 0 var(--brief-indent);
+}
+
+/* Текст клиента отдельным блоком, без картинки рядом (правки в anim9): тот же красный
+   и те же отступы от обоих краёв, что и остальные материалы ТЗ. */
+.work__text--brief {
+  color: var(--red);
+  padding: 0 var(--brief-indent);
+  margin-bottom: 8px;
+}
+
+/* Скрины задачи — с отступами от обоих краёв окна, как и подпись «ТЗ» над ними. */
+.work__row--brief {
+  padding: 0 var(--brief-indent);
+}
+
+/* Группы видео: в столбик во всю ширину или парой рядом. */
+.work__videos {
+  display: grid;
+  gap: 10px;
+  margin: 30px 0;
+}
+
+.work__videos--pair {
+  grid-template-columns: 1fr 1fr;
+}
+
+.work__videos:last-child {
+  margin-bottom: 0;
+}
+
+/* Эмоджи. Отступ от текста тот же, что у рядов картинок, — 30px, поля схлопываются. */
+.work__emoji {
+  display: grid;
+  gap: 10px;
+  margin: 30px 0;
+}
+
+.work__emoji--three {
+  grid-template-columns: repeat(3, 1fr);
+  /* Три эмоджи в макете не во всю ширину, а собраны к центру. */
+  padding: 0 8%;
+}
+
+.work__emoji--grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.work__emoji:last-child {
+  margin-bottom: 0;
+}
+
+/* Квадратная ячейка и contain: эмоджи разных пропорций (голова вытянута по высоте)
+   не растягиваются и выстраиваются в ровную сетку. Фон не задаём — у картинок
+   настоящая прозрачность, и они лежат прямо на сером фоне окна. */
+.work__emoji img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+}
+
+.work__row img {
+  display: block;
+  width: 100%;
+  /* Обязательно при атрибутах width/height в разметке: они нужны браузеру, чтобы
+     зарезервировать место до загрузки, но без height: auto картинка растянулась бы
+     до высоты из атрибута. */
+  height: auto;
+  min-width: 0;
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+/* Картинка с настоящей прозрачностью (сплющенная сетка из PDF): зазоры между
+   плитками должны просвечивать серым фоном окна, а не заливаться белым. */
+.work__row img.work__img--clear {
+  background: none;
+  border-radius: 0;
+}
+
+/* ТЗ слева, референс справа. Высота картинки = высоте текста слева (подгоняет
+   initBriefs в main.js), ширина идёт от её пропорций — отсюда width: auto и
+   flex: none: колонка картинки ровно такой ширины, какой картинка получилась. */
+.work__brief {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  /* 30px сверху и снизу — тот же шаг, что между всеми блоками разбора. Сверху было
+     12px, и заголовок над блоком стоял к ТЗ ближе, чем ТЗ к тексту под ним. */
+  margin: 30px 0;
+}
+
+/* Правило про ТЗ: всё, что относится к техзаданию — подпись «ТЗ», текст ТЗ, скрины
+   задачи и референс, — отступает от краёв окна на --brief-indent с обеих сторон.
+   Так материалы клиента визуально вложены в рассказ Алеси, а не идут вровень с ним.
+   Переменная живёт на .work, поэтому её видят все блоки ТЗ в разборе; одно значение
+   на обе стороны, чтобы отступы не разъехались. Новые блоки ТЗ делай так же. */
+.work {
+  --brief-indent: 24px;
+}
+
+.work__brief-img {
+  flex: none;
+  width: auto;
+  height: auto;
+  margin-right: var(--brief-indent);
+  border-radius: var(--radius);
+  /* Высоту initBriefs дотягивает ровно до текста, и она бывает на несколько процентов
+     больше, чем даёт ширина по пропорциям, — cover срезает этот излишек сверху и
+     снизу поровну, не сплющивая картинку. */
+  object-fit: cover;
+}
+
+/* Вместо одной картинки — столбик из нескольких (ТЗ Маяковского). Высоту столбика
+   задаёт initBriefs, картинки делят её пропорционально своим высотам (406 и 507 при
+   общей ширине), зазор между ними срезает cover. */
+.work__brief-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.work__brief-stack img {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  border-radius: var(--radius);
+  object-fit: cover;
+}
+
+.work__brief-stack img:first-child { flex: 406 1 0; }
+.work__brief-stack img:last-child { flex: 507 1 0; }
+
+/* Вертикальное видео на серой плашке (ТЗ anim8). Размер плашки задаёт initBriefs по
+   data-ratio, видео внутри — во всю её высоту, по центру; серое по бокам и есть
+   плашка. Пока файла нет, остаётся просто серый прямоугольник. */
+.work__brief-plate {
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  background: #dcdce2;
+  aspect-ratio: 1.08;
+}
+
+.work__brief-plate video {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+
+.work__brief-text {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Внутри колонки ТЗ абзацы идут плотнее, чем в основном тексте разбора, — это один
+   блок цитаты, а не отдельные абзацы истории. */
+/* Подпись «ТЗ» — часть той же цитаты: красная и с тем же сдвигом, что и абзацы. */
+.work__brief-text .work__label {
+  margin-top: 0;
+  padding-left: var(--brief-indent);
+  color: var(--red);
+}
+
+/* Сам текст ТЗ — цитата клиента, поэтому выделен: красный и со сдвигом влево, чтобы
+   не сливаться с рассказом Алеси вокруг. */
+.work__brief-text .work__text {
+  margin-bottom: 8px;
+  padding-left: var(--brief-indent);
+  color: var(--red);
+}
+
+.work__brief-text .work__text:last-child {
+  margin-bottom: 0;
+}
+
+/* Дата в самом конце разбора — как в макете, по центру и приглушённо. */
+.work__date {
+  color: var(--gray);
+  text-align: center;
+  margin: 30px 0 0;
+}
+
+@media (max-width: 640px) {
+  /* На телефоне две колонки дали бы ТЗ полоску шириной в 180px — ставим в столбик,
+     а референс не растягиваем на всю ширину: он маленький (171×371). */
+  .work__brief {
+    flex-direction: column;
+  }
+
+  /* Картинка на телефоне стоит по центру под текстом — отступ справа сдвигал бы её
+     с центра, поэтому здесь он снят. */
+  .work__brief-img {
+    flex: none;
+    width: 50%;
+    align-self: center;
+    margin-right: 0;
+  }
+
+  /* Столбик картинок на телефоне шире одиночного рефа, иначе агитки не разглядеть;
+     высота — естественная, делёж по flex здесь не нужен. */
+  .work__brief-stack,
+  .work__brief-plate {
+    width: 80%;
+  }
+
+  /* Селекторы те же, что у долей выше, — иначе :first-child/:last-child перебьют. */
+  .work__brief-stack img:first-child,
+  .work__brief-stack img:last-child {
+    flex: none;
+    height: auto;
+  }
+}
+
+/* То же столбиком и на широком экране — когда ровной высоты с текстом не получается
+   (текст длинный, окно узкое). Правило Алеси: картинки рядом с ТЗ либо ровно по высоте
+   текста, либо не рядом — ничего не должно торчать снизу. Класс ставит initBriefs. */
+.work__brief.is-stacked {
+  flex-direction: column;
+}
+
+.work__brief.is-stacked .work__brief-img {
+  flex: none;
+  width: 50%;
+  align-self: center;
+  margin-right: 0;
+}
+
+.work__brief.is-stacked .work__brief-stack,
+.work__brief.is-stacked .work__brief-plate {
+  width: 80%;
+}
+
+.work__brief.is-stacked .work__brief-stack img:first-child,
+.work__brief.is-stacked .work__brief-stack img:last-child {
+  flex: none;
+  height: auto;
+}
+
+/* Универсальный ряд с разными пропорциями: доля каждой картинки задаётся в разметке
+   через --f (ширина/высота файла), и тогда все картинки в ряду одной высоты. Удобнее,
+   чем заводить модификатор под каждый ряд. */
+.work__row--ratio img {
+  flex: var(--f, 1) 1 0;
+}
+
+/* Ряды в разборе печатки: доли равны соотношениям сторон, тогда обе картинки в ряду
+   одной высоты. Развёртка 673×648 = 1.038 и коробка 693×693 = 1. */
+.work__row--box img:first-child { flex: 1038 1 0; }
+.work__row--box img:last-child { flex: 1000 1 0; }
+
+/* Подарки: 710×533 = 1.332 и 595×535 = 1.112. */
+.work__row--gifts img:first-child { flex: 1332 1 0; }
+.work__row--gifts img:last-child { flex: 1112 1 0; }
+
+/* 193 и 436 — ширины этих двух картинок в макете; соотношение сохранено. */
+.work__row--split img:first-child { flex: 193 1 0; }
+.work__row--split img:last-child { flex: 436 1 0; }
+
+/* Рисунок с лицами и видео рядом, одной высоты. При flex-basis 0 ширины делятся в
+   пропорции flex-grow, а одинаковая высота получается, когда доли равны соотношениям
+   сторон: картинка 1000/927 = 1.079, видео квадратное = 1. Меняешь файл другой
+   пропорции — пересчитай эти два числа. */
+.work__row--faces > img { flex: 1.079 1 0; }
+.work__row--faces > video { flex: 1 1 0; min-width: 0; }
+
+/* Раньше здесь лежали доли для двух скринов ТЗ Маяковского — те картинки заменены
+   текстом, а доли в рядах теперь задаются через --f в разметке (.work__row--ratio). */
+
+/* Два видео в ряд одной высоты — тот же приём: 432/530 и 1080/1440. */
+.work__row--videos > video:first-child { flex: 0.815 1 0; min-width: 0; }
+.work__row--videos > video:last-child { flex: 0.75 1 0; min-width: 0; }
+
+@media (max-width: 640px) {
+  /* На узком экране три квадрата по 100px нечитаемы, а ряд из двух вариантов
+     сплющивает узкий кадр до полоски — поэтому на мобилке всё в столбик. */
+  .work__row {
+    flex-direction: column;
+  }
+}
+
+/* Карусель. Прокрутка настоящая, нативная, и БЕЗ прилипания к карточкам: остановиться
+   можно где угодно, хоть на стыке двух. Свайп пальцем и трекпад работают сами, а
+   колесо мыши и стрелки двигают ту же прокрутку плавной анимацией (initCarousel в
+   main.js). Раньше здесь стоял scroll-snap-type: x mandatory — он и давал движение
+   рывками, целыми карточками: любую промежуточную позицию браузер тут же отбрасывал
+   к ближайшей карточке. Не возвращай его — плавность пропадёт. */
+.carousel {
+  position: relative;
+}
+
+.carousel__viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* Скругляем всю ленту, а не каждую картинку: зазоров между карточками нет, и
+     скругления на каждой давали бы щербинки на стыках. overflow не visible, так что
+     лента по скруглению и обрезается. */
+  border-radius: var(--radius);
+  scrollbar-width: none;
+}
+
+.carousel__viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel__track {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Одна карточка — вся ширина ленты. Что квадрат при этом влезает по высоте, держит
+   ширина окна разбора (.modal.is-detail .modal__panel), а не сама карточка. */
+.carousel__slide {
+  flex: 0 0 100%;
+}
+
+.carousel__slide img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: #fff;
+}
+
+/* Стрелки намеренно тихие: полупрозрачный белый кружок с серым значком поверх
+   картинки. Главный способ листать — колесо, свайп и тачпад, стрелки лишь подсказка.
+   Под курсором проявляются — нажимать их всё-таки должно быть удобно. */
+.carousel__arrow {
+  position: absolute;
+  /* 50% — это середина .carousel, а её высота равна высоте слайда: внутри только
+     viewport, полоса прокрутки спрятана. */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  color: rgba(27, 27, 38, 0.5);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+/* Кнопка звука на видео в разборе (initSoundButtons) — в той же манере, что стрелки
+   карусели: полупрозрачный белый круг, ярче при наведении. Координаты ставит JS. */
+.sound-btn {
+  position: absolute;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  color: rgba(27, 27, 38, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.sound-btn:hover,
+.sound-btn.is-on {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink);
+}
+
+.carousel__arrow:hover {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink);
+}
+
+/* Лента внутри текста разбора (текстовые основы). Отступ от абзацев тот же, что у
+   рядов картинок, — 30px, поля с соседними абзацами схлопываются. */
+.work__gallery {
+  margin: 30px 0;
+}
+
+/* Сетка картинок в разборе: три в ряд (соцсети) или три на две строки (баннеры).
+   Зазор тот же 10px, что между картинками в ряду. */
+.work__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 30px 0;
+}
+
+.work__grid img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+}
+
+/* Картинка, которую можно открыть во весь экран (initZoom). */
+.work__grid img[data-zoom],
+.work__row img[data-zoom] {
+  cursor: zoom-in;
+}
+
+/* Слой с увеличенной картинкой. Поверх модалки (у неё z-index: 100), поэтому разбор
+   остаётся открытым под ним. */
+.zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4vmin;
+  background: rgba(27, 27, 38, 0.82);
+  cursor: zoom-out;
+}
+
+.zoom img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--radius);
+}
+
+/* В окне видно полторы карточки: видимая ширина = 1.5 карточки + один зазор, отсюда
+   (100% - 10px) / 1.5. Половинка следующей справа — та самая подсказка «листай».
+   Карточки здесь отдельные квадраты с зазором, поэтому скругление у каждой картинки,
+   а не у всей ленты, как у верхней карусели без зазоров. */
+.carousel--peek .carousel__viewport {
+  border-radius: 0;
+}
+
+.carousel--peek .carousel__track {
+  gap: 10px;
+}
+
+.carousel--peek .carousel__slide {
+  flex: 0 0 calc((100% - 10px) / 1.5);
+}
+
+.carousel--peek .carousel__slide img {
+  border-radius: var(--radius);
+}
+
+/* Лента из разнокалиберных фотографий (разбор «хехе»): высота у всех одна, ширина —
+   своя у каждой, лишнее уезжает за правый край и листается колесом, свайпом и
+   стрелками. Высота блока задаётся переменной --row-h: у фотографий она ниже, у
+   вертикальных сторисов выше. */
+.carousel--row .carousel__viewport {
+  border-radius: 0;
+}
+
+.carousel--row .carousel__track {
+  gap: 10px;
+  /* Лента занимает всю высоту окошка — иначе процентная высота слайдов меряется
+     от нулевой высоты дорожки, и слайды схлопываются. */
+  height: 100%;
+}
+
+/* Высота ленты живёт на самой ленте, а ширина слайда выводится из неё и пропорций
+   картинки (--ar в разметке). Из самой картинки ширину брать нельзя: они грузятся
+   лениво, до загрузки их ширина нулевая — лента схлопывалась бы и не прокручивалась. */
+.carousel--row .carousel__viewport {
+  height: var(--row-h, 300px);
+}
+
+.carousel--row .carousel__slide {
+  flex: 0 0 auto;
+  height: 100%;
+  width: auto;
+  aspect-ratio: var(--ar, 1);
+}
+
+/* Лента высотой во всю ширину окна разбора — для крупных баннеров: viewport
+   квадратный, поэтому его высота равна собственной ширине. */
+.carousel--square .carousel__viewport {
+  height: auto;
+  aspect-ratio: 1 / 1;
+}
+
+.carousel--row .carousel__slide img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+/* Лента как самостоятельный блок разбора — общий шаг 30px. Две ленты подряд (два ряда
+   баннеров «хехе») — это один блок из двух строк, между ними те же 10px, что между
+   картинками внутри ленты; ужимаем с обеих сторон, иначе поля схлопнутся в 30px. */
+.work__scroll {
+  margin: 30px 0;
+}
+
+.work__scroll:has(+ .work__scroll) {
+  margin-bottom: 10px;
+}
+
+.work__scroll + .work__scroll {
+  margin-top: 10px;
+}
+
+/* Колонка из двух картинок в одном слайде — так листаются баннеры: семь колонок по
+   две штуки, ровно как в макете. */
+.carousel--row .carousel__slide--stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.carousel--row .carousel__slide--stack img {
+  height: calc((100% - 10px) / 2);
+  width: 100%;
+}
+
+/* Стрелки лежат ВНУТРИ бокса, а не свисают наружу на -14px, как крестик закрытия.
+   У .modal__detail стоит overflow-y: auto, а по спецификации это делает и
+   overflow-x равным auto — свисающая стрелка тут же добавляла разбору лишнюю
+   горизонтальную полосу прокрутки шириной ровно в свой вылет. */
+.carousel__arrow--prev { left: 10px; }
+.carousel__arrow--next { right: 10px; }
+
+/* В начале и в конце ленты стрелка исчезает. Раскладку это не трогает — стрелки
+   позиционированы абсолютно, ничего рядом не сдвинется. */
+.carousel__arrow:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal__close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--blue);
+  color: #fff;
+  font-size: 22px;
+  line-height: 0.9;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal__panel--author {
+  width: min(560px, 92vw);
+  padding: 0;
+}
+
+.author-modal__media {
+  aspect-ratio: 3 / 4;
+  max-height: 82vh;
+}
+
+.author-modal__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.author-modal__arrow {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.author-modal__arrow:hover {
+  background: #ffffff;
+}
+
+/* Needs to be a positioned element (not just later in DOM) so it actually stacks
+   above .modal__backdrop — .modal__backdrop is position:absolute, and a positioned
+   sibling always paints above a non-positioned in-flow one regardless of DOM order,
+   so without this the backdrop would sit on top and swallow clicks meant for the button. */
+.order-modal__btn {
+  position: relative;
+  display: inline-block;
+  padding: 14px 32px;
+  border-radius: var(--radius-btn);
+  background: var(--green);
+  color: var(--ink);
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: clamp(15px, 1.6vw, 18px);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.order-modal__btn:hover {
+  background: var(--green-soft);
+  transform: translateY(-2px);
+}
+
+/* ---------- FOOTER ---------- */
+.site-footer {
+  text-align: center;
+  padding: 60px 20px 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+.footer__link {
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 100;
+  color: var(--ink);
+}
+
+.footer__link:hover { color: var(--blue); }
+
+.footer__link--instagram:hover { color: #F3333E; }
+
+/* Behance в покое чёрный, как telegram, и синеет под курсором — синий тут и
+   фирменный цвет Behance. Instagram рядом светится своим красным. */
+.footer__link--behance:hover { color: var(--blue); }
+
+.footer__logo-link {
+  display: block;
+  margin: 80px 0 0;
+}
+
+/* Отступ сверху теперь на ссылке-обёртке: у самой картинки он мешал бы доджу —
+   она двигается трансформом внутри ссылки. */
+.footer__logo {
+  display: block;
+  height: clamp(28px, 4vw, 38px);
+  width: auto;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 900px) {
+  .about {
+    grid-template-columns: 260px 1fr;
+    gap: 36px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero__eyebrow {
+    font-size: 7.8vw;
+  }
+
+  .hero__title {
+    font-size: 20vw;
+  }
+
+  .about {
+    grid-template-columns: 120px 1fr;
+    gap: 20px;
+    padding-bottom: 70px;
+  }
+
+  .about__photo img {
+    aspect-ratio: 3/4;
+    object-position: 27% top;
+  }
+
+  .about__name {
+    font-size: 12px;
+    margin: 0 0 2px;
+  }
+
+  .about__role {
+    font-size: 12px;
+    margin: 0 0 6px;
+  }
+
+  /* Текст разборов на телефоне — в полтора раза мельче описания about, как и на
+     компьютере. */
+  .work__lead,
+  .work__text,
+  .work__label,
+  .work__date {
+    font-size: 8px;
+  }
+
+  .about__bio p {
+    font-size: 12px;
+    margin: 0 0 5px;
+  }
+
+  .about__resume {
+    font-size: 12px;
+  }
+
+  .portfolio__title {
+    font-size: 12px;
+  }
+
+  .btn-more {
+    font-size: 12px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+
+  /* Нечётная последняя карточка растягивается на обе колонки.
+     В две колонки девять работ дают четыре ряда и одинокую карточку внизу — она
+     висит слева, а справа дыра. Растянутая на всю ширину она читается как финальный
+     акцент, а не как недобор.
+
+     Условие самоподдерживающееся: :last-child:nth-child(odd) срабатывает, только
+     если порядковый номер последней карточки нечётный, то есть работ нечётное число.
+     Добавится десятая — правило само перестанет применяться, править ничего не надо.
+
+     Правило живёт ТОЛЬКО в мобильном медиа-запросе. На десктопе колонки три, девять
+     работ дают ровные 3×3, и растягивание сломало бы сетку.
+
+     Скрытые в свёрнутом виде карточки :nth-child всё равно считает (он смотрит на
+     позицию в DOM, а не на видимость), так что в свёрнутом состоянии правило
+     достаётся невидимой карточке и ни на что не влияет. */
+  .grid:not(.is-collapsed) > .card:last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+
+  .grid.is-collapsed .card:nth-child(n+4) {
+    display: block;
+  }
+
+  .grid.is-collapsed .card:nth-child(n+5) {
+    display: none;
+  }
+
+  .hero { padding: 44px 16px 70px; }
+
+  .portfolio { padding-bottom: 60px; }
+
+  .site-footer { padding: 50px 16px 100px; }
+
+  .modal__panel {
+    width: min(420px, 92vw);
+    padding: 16px;
+    max-height: 88vh;
+  }
+
+  .modal__body {
+    flex-direction: column;
+    height: auto;
+    max-height: calc(88vh - 32px);
+  }
+
+  .modal__media {
+    flex: 0 0 auto;
+    aspect-ratio: 1 / 1;
+    max-height: 45vh;
+  }
+
+  .modal__info {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    padding-top: 14px;
+  }
+}

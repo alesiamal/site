@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>магазин — алеся мал</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<!-- Те же три начертания первого экрана, что и на портфолио: шапка и заголовок
+     «магазин» появляются сразу, без подмены шрифта. -->
+<link rel="preload" href="assets/fonts/Soledago.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/Moula-Medium.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/Moula-Thin.woff2" as="font" type="font/woff2" crossorigin>
+<!-- style.css — общая база (переменные, шрифты, шапка, подвал) плюс портфолио;
+     shop.css — только магазин. Разделение держится на том, что магазин не
+     переиспользует ни одного блока портфолио, кроме шапки и подвала. -->
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="shop.css">
+</head>
+<body class="page-shop">
+
+<div data-include="partials/header.html"></div>
+
+<main id="top">
+  <!-- Рисунок в левом верхнем углу, выше заголовка. Лежит прямо в <main>, а не в
+       секции: он относится ко всей странице, а не к знакомству. -->
+  <img class="shop-decor shop-decor--11" src="assets/shop/decor/decor-11.webp" alt="" aria-hidden="true">
+
+  <h1 class="shop__title">магазин</h1>
+
+  <div data-include="views/shop-intro.html"></div>
+  <div data-include="views/shop-canvases.html"></div>
+  <div data-include="views/shop-posters.html"></div>
+  <div data-include="views/shop-sketches.html"></div>
+  <div data-include="views/shop-shirts.html"></div>
+</main>
+
+<!-- Солнце из макета живёт между контентом и подвалом: к ссылкам оно относится
+     ближе, чем к футболкам, но частью <footer> не является — подвал общий с
+     портфолио, и дублировать его ради картинки не нужно. -->
+<div class="shop-outro">
+  <img class="shop-decor shop-decor--10" src="assets/shop/decor/decor-10.webp" alt="" aria-hidden="true">
+  <!-- Солнце — не <img>, а блок с маской по этому же файлу: цвет рисунка задаётся
+       из CSS (на ховере синеет), а у картинки цвет перекрасить нечем. Файл чисто
+       декоративный, поэтому потери alt здесь нет. -->
+  <span class="shop__sun" aria-hidden="true"></span>
+</div>
+
+<div data-include="partials/footer.html"></div>
+
+<!-- data-main говорит include.js, какой скрипт подключить после шрифтов: у магазина
+     свой маленький shop.js (открытие картинки во весь экран), main.js здесь не нужен —
+     он весь про hero и модалки портфолио. -->
+<!-- Английская версия: словарь и сам переключатель. Обычными синхронными
+     тегами и до include.js — к моменту, когда включения соберутся, I18N уже
+     существует, и include.js зовёт его до показа страницы. -->
+<script src="js/i18n-en.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/include.js" data-main="js/pointer.js, js/shop.js, js/shop-ripple.js"></script>
+
+</body>
+</html>

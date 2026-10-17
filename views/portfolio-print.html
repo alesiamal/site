@@ -1,0 +1,524 @@
+  <!-- ПЕЧАТКА -->
+  <!-- Файлы называются print1…print6 по порядку показа в сетке — та же договорённость,
+       что и у anim1…anim9 в диджитале. При перестановке работ переименовывай файлы
+       в assets/, а не только меняй src, иначе номер перестанет совпадать с позицией.
+       print7, print8 и print9 лежат в assets/, но со страницы убраны: print9 — меню
+       кофейни giraf, оно ушло с сетки при перестановке 01.10.2026. -->
+  <section class="portfolio" id="print">
+    <h2 class="portfolio__title">печатка</h2>
+    <div class="grid is-collapsed">
+      <figure class="card">
+        <img src="assets/print1.jpg" data-detail="detail-print1" alt="Леттеринг «хехе»" loading="lazy">
+      </figure>
+      <figure class="card">
+        <img src="assets/print2.jpg" data-detail="detail-print2" alt="Упаковка карточек креативных методик Fistashki" loading="lazy">
+      </figure>
+      <figure class="card">
+        <img src="assets/print3.jpg" data-detail="detail-print3" alt="Конкурс MUSTART 2024" loading="lazy">
+      </figure>
+      <figure class="card">
+        <img src="assets/print4.jpg" data-detail="detail-print4" alt="Оформление фасада лицея №102" loading="lazy">
+      </figure>
+      <figure class="card card--gray">
+        <img src="assets/print5.jpg" data-detail="detail-print5" alt="Газета «Теребуты»" loading="lazy">
+      </figure>
+      <figure class="card">
+        <img src="assets/print6.jpg" data-detail="detail-print6" alt="Журнал ко дню рождения" loading="lazy">
+      </figure>
+    </div>
+    <div class="section-more">
+      <button class="btn-more" type="button">смотреть ещё</button>
+      <button class="btn-hide" type="button" hidden>скрыть</button>
+    </div>
+
+    <!-- Разборы работ печатки. Как и в диджитале, лежат в <template> внутри <section>:
+         include.js берёт из файла только один корневой элемент. -->
+    <template id="detail-print1">
+      <article class="work">
+        <div class="work__row">
+          <img src="assets/xexe-grid.jpg" width="1314" height="1314" alt="25 нарисованных дудликов" loading="lazy" data-zoom>
+        </div>
+
+        <p class="work__label">Xexe</p>
+
+        <p class="work__text">Мой авторский проект. Я делала стикеры, футболки с вышивкой своих рисунков, оформляла профиль для соцсетей, придумывала брендбук.</p>
+
+        <video class="work__video" src="assets/xexe-gif.mp4" width="2800" height="1694" data-autoplay muted loop playsinline preload="none" aria-label="Анимированная гифка проекта Xexe"></video>
+
+        <p class="work__text">Сначала я нарисовала на планшете 25 дудликов, разукрасила, стала готовить к печати</p>
+
+        <div class="work__row">
+          <img src="assets/xexe-step-1.jpg" width="552" height="828" alt="Дудлики на чёрном фоне" loading="lazy" data-zoom>
+          <img src="assets/xexe-step-2.jpg" width="552" height="828" alt="Контуры дудликов для печати" loading="lazy" data-zoom>
+          <img src="assets/xexe-step-3.jpg" width="555" height="831" alt="Раскрашенные дудлики" loading="lazy" data-zoom>
+        </div>
+
+        <p class="work__text">Напечатала стикеры с трассировкой обрезки</p>
+
+        <div class="work__row">
+          <img src="assets/xexe-sticker-1.jpg" width="546" height="726" alt="Напечатанные стикеры, фото 1" loading="lazy" data-zoom>
+          <img src="assets/xexe-sticker-2.jpg" width="546" height="726" alt="Напечатанные стикеры, фото 2" loading="lazy" data-zoom>
+          <img src="assets/xexe-sticker-3.jpg" width="543" height="723" alt="Напечатанные стикеры, фото 3" loading="lazy" data-zoom>
+        </div>
+
+        <p class="work__text">Подготовила пару дудликов в векторе для машинной вышивки на футболках. Закупала футболки на вб, относила в ателье для вышивки</p>
+
+        <!-- Пять фотографий одной высоты, лишние уезжают вправо: листается колесом,
+             свайпом и стрелками (carousel--row). -->
+        <div class="work__scroll carousel carousel--row" style="--row-h: 300px">
+          <div class="carousel__viewport">
+            <ul class="carousel__track">
+              <li class="carousel__slide" style="--ar: 1.078"><img src="assets/xexe-emb-1.jpg" width="1284" height="1191" alt="Дудлик в векторе для вышивки" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.75"><img src="assets/xexe-emb-2.jpg" width="897" height="1196" alt="Футболка с вышивкой на синем фоне" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.749"><img src="assets/xexe-emb-3.jpg" width="894" height="1193" alt="Серая футболка с вышитым дудликом" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 1"><img src="assets/xexe-emb-4.jpg" width="1191" height="1191" alt="Вышивка крупным планом" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.75"><img src="assets/xexe-emb-5.jpg" width="897" height="1196" alt="Вышитый кот на рукаве" loading="lazy" data-zoom></li>
+            </ul>
+          </div>
+          <button class="carousel__arrow carousel__arrow--prev" type="button" aria-label="Предыдущее фото">‹</button>
+          <button class="carousel__arrow carousel__arrow--next" type="button" aria-label="Следующее фото">›</button>
+        </div>
+
+        <p class="work__text">Делала дизайны для соцсети: оформляла сторисы, посты</p>
+
+        <div class="work__scroll carousel carousel--row" style="--row-h: 440px">
+          <div class="carousel__viewport">
+            <ul class="carousel__track">
+              <li class="carousel__slide" style="--ar: 0.563"><img src="assets/xexe-story-1.jpg" width="880" height="1564" alt="Сторис «Привет)»" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.563"><img src="assets/xexe-story-2.jpg" width="880" height="1564" alt="Сторис с описанием футболки" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.563"><img src="assets/xexe-story-3.jpg" width="880" height="1564" alt="Сторис с футболками в наличии" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.563"><img src="assets/xexe-story-4.jpg" width="880" height="1564" alt="Сторис-туториал, как заказать футболку" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.563"><img src="assets/xexe-story-5.jpg" width="880" height="1564" alt="Сторис «Спасибо за просмотр»" loading="lazy" data-zoom></li>
+            </ul>
+          </div>
+          <button class="carousel__arrow carousel__arrow--prev" type="button" aria-label="Предыдущий сторис">‹</button>
+          <button class="carousel__arrow carousel__arrow--next" type="button" aria-label="Следующий сторис">›</button>
+        </div>
+
+        <div class="work__grid">
+          <img src="assets/xexe-soc-1.jpg" width="558" height="558" alt="Пост 1" loading="lazy" data-zoom>
+          <img src="assets/xexe-soc-2.jpg" width="558" height="558" alt="Пост 2" loading="lazy" data-zoom>
+          <img src="assets/xexe-soc-3.jpg" width="558" height="558" alt="Пост 3" loading="lazy" data-zoom>
+          <img src="assets/xexe-soc-4.jpg" width="558" height="558" alt="Пост 4" loading="lazy" data-zoom>
+          <img src="assets/xexe-soc-5.jpg" width="558" height="558" alt="Пост 5" loading="lazy" data-zoom>
+          <img src="assets/xexe-soc-6.jpg" width="558" height="558" alt="Пост 6" loading="lazy" data-zoom>
+          <img src="assets/xexe-soc-7.jpg" width="558" height="558" alt="Пост 7" loading="lazy" data-zoom>
+          <img src="assets/xexe-soc-8.jpg" width="558" height="558" alt="Пост 8" loading="lazy" data-zoom>
+          <img src="assets/xexe-soc-9.jpg" width="558" height="558" alt="Пост 9" loading="lazy" data-zoom>
+        </div>
+
+        <div class="work__row">
+          <img src="assets/print1.jpg" width="1400" height="1400" alt="Логотип «хехе»" loading="lazy" data-zoom>
+        </div>
+
+        <p class="work__text">Сделала по приколу еще баннеры с дудликами, придумывала для каждого мотивационную фразу</p>
+
+        <!-- Две ленты баннеров, как в макете: верхняя семёрка и нижняя листаются
+             каждая сама по себе. --ar = 478/717, ровно пропорции файлов. -->
+        <div class="work__scroll carousel carousel--row" style="--row-h: 300px">
+          <div class="carousel__viewport">
+            <ul class="carousel__track">
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-1.jpg" width="478" height="717" alt="Баннер CURIOSITY" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-2.jpg" width="478" height="717" alt="Баннер I LOVE U" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-3.jpg" width="478" height="717" alt="Баннер BEWARE" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-4.jpg" width="477" height="715" alt="Баннер ODD" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-5.jpg" width="478" height="717" alt="Баннер SMILE" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-6.jpg" width="478" height="717" alt="Баннер LOOKS" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-7.jpg" width="478" height="717" alt="Баннер BE SHY" loading="lazy" data-zoom></li>
+            </ul>
+          </div>
+          <button class="carousel__arrow carousel__arrow--prev" type="button" aria-label="Предыдущий баннер">‹</button>
+          <button class="carousel__arrow carousel__arrow--next" type="button" aria-label="Следующий баннер">›</button>
+        </div>
+
+        <div class="work__scroll carousel carousel--row" style="--row-h: 300px">
+          <div class="carousel__viewport">
+            <ul class="carousel__track">
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-8.jpg" width="478" height="717" alt="Баннер MUTUAL" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-9.jpg" width="478" height="717" alt="Баннер TRY" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-10.jpg" width="478" height="717" alt="Баннер STRANGE" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-11.jpg" width="478" height="717" alt="Баннер SMART" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-12.jpg" width="477" height="715" alt="Баннер ENJOY" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-13.jpg" width="478" height="717" alt="Баннер LISTEN" loading="lazy" data-zoom></li>
+              <li class="carousel__slide" style="--ar: 0.667"><img src="assets/xexe-banner-14.jpg" width="478" height="717" alt="Баннер EMBRACE" loading="lazy" data-zoom></li>
+            </ul>
+          </div>
+          <button class="carousel__arrow carousel__arrow--prev" type="button" aria-label="Предыдущий баннер">‹</button>
+          <button class="carousel__arrow carousel__arrow--next" type="button" aria-label="Следующий баннер">›</button>
+        </div>
+
+        <p class="work__date">май 2024</p>
+      </article>
+    </template>
+
+    <!-- Баннеры для лицея в Ростове-на-Дону. Материалы из макета Алеси (Licej.pdf).
+         Три идеи и финальные баннеры — ленты с горизонтальной прокруткой, как она
+         отметила в макете. -->
+    <template id="detail-print4">
+      <article class="work">
+        <div class="work__row">
+          <img src="assets/print4.jpg" width="1356" height="1356" alt="Баннеры на фасаде лицея" data-zoom loading="lazy">
+        </div>
+
+        <p class="work__label">Баннеры для лицея в Ростове-на-Дону</p>
+
+        <p class="work__text">Это полублаготворительный проект агентства — печатные баннеры для школы</p>
+
+        <!-- ТЗ: текст слева, две фотографии фасада столбиком справа.
+             data-ratio = 247 / (139 + 139 + зазор). -->
+        <div class="work__brief">
+          <div class="work__brief-text">
+            <p class="work__label">ТЗ</p>
+            <p class="work__text">Необходимо разработать визуал, который будет использован на входе в учебное заведение.</p>
+            <p class="work__text">ЦА - школьники, родители.</p>
+            <p class="work__text">Особенности<br>- баннер находится на солнечной стороне, потому будет выгорать.</p>
+            <p class="work__text">Задача минимум - сделать обновленный коллаж на темы, связанные с городом.<br>Задача максимум - предложить вариант, который будет использовать другое визуальное решение.</p>
+            <p class="work__text">Было бы круто, если бы школьники хотели фотографироваться на фоне баннера.</p>
+          </div>
+          <div class="work__brief-img work__brief-stack" data-ratio="0.863">
+            <img src="assets/lic-tz-1.jpg" width="741" height="417" alt="Фасад лицея со старым баннером, фото 1" loading="lazy">
+            <img src="assets/lic-tz-2.jpg" width="741" height="417" alt="Фасад лицея со старым баннером, фото 2" loading="lazy">
+          </div>
+        </div>
+
+        <p class="work__text">С командой креатива мы думали над разными вариантами</p>
+
+        <div class="work__row">
+          <img src="assets/lic-boards-1.jpg" width="1710" height="342" alt="Первые варианты визуалов" data-zoom loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/lic-boards-2.jpg" width="1695" height="358" alt="Ещё варианты визуалов" data-zoom loading="lazy">
+        </div>
+
+        <p class="work__text">В конечном итоге пришли к трем идеям</p>
+
+        <div class="work__row">
+          <img src="assets/lic-chat.jpg" width="1272" height="1024" alt="Сообщение с тремя идеями" data-zoom loading="lazy">
+        </div>
+
+        <!-- Каждая идея — своя лента на три баннера. --ar = 1004/504. -->
+        <div class="work__scroll carousel carousel--row" style="--row-h: 220px">
+          <div class="carousel__viewport">
+            <ul class="carousel__track">
+              <li class="carousel__slide" style="--ar: 1.992"><img src="assets/lic-idea1-1.jpg" width="1004" height="504" alt="Идея 1, баннер 1" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 1.992"><img src="assets/lic-idea1-2.jpg" width="1004" height="502" alt="Идея 1, баннер 2" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 1.992"><img src="assets/lic-idea1-3.jpg" width="1004" height="504" alt="Идея 1, баннер 3" data-zoom loading="lazy"></li>
+            </ul>
+          </div>
+          <button class="carousel__arrow carousel__arrow--prev" type="button" aria-label="Предыдущий баннер">‹</button>
+          <button class="carousel__arrow carousel__arrow--next" type="button" aria-label="Следующий баннер">›</button>
+        </div>
+
+        <div class="work__scroll carousel carousel--row" style="--row-h: 220px">
+          <div class="carousel__viewport">
+            <ul class="carousel__track">
+              <li class="carousel__slide" style="--ar: 1.992"><img src="assets/lic-idea2-1.jpg" width="1004" height="502" alt="Идея 2, баннер «Учись»" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 1.992"><img src="assets/lic-idea2-2.jpg" width="1004" height="502" alt="Идея 2, баннер «Мечтай»" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 1.992"><img src="assets/lic-idea2-3.jpg" width="1004" height="502" alt="Идея 2, баннер «Достигай»" data-zoom loading="lazy"></li>
+            </ul>
+          </div>
+          <button class="carousel__arrow carousel__arrow--prev" type="button" aria-label="Предыдущий баннер">‹</button>
+          <button class="carousel__arrow carousel__arrow--next" type="button" aria-label="Следующий баннер">›</button>
+        </div>
+
+        <div class="work__scroll carousel carousel--row" style="--row-h: 220px">
+          <div class="carousel__viewport">
+            <ul class="carousel__track">
+              <li class="carousel__slide" style="--ar: 1.992"><img src="assets/lic-idea3-1.jpg" width="803" height="403" alt="Идея 3, баннер «Прошлое»" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 1.992"><img src="assets/lic-idea3-2.jpg" width="803" height="403" alt="Идея 3, баннер «Настоящее»" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 1.992"><img src="assets/lic-idea3-3.jpg" width="803" height="403" alt="Идея 3, баннер «Будущее»" data-zoom loading="lazy"></li>
+            </ul>
+          </div>
+          <button class="carousel__arrow carousel__arrow--prev" type="button" aria-label="Предыдущий баннер">‹</button>
+          <button class="carousel__arrow carousel__arrow--next" type="button" aria-label="Следующий баннер">›</button>
+        </div>
+
+        <p class="work__text">Показали клиенту три идеи. Клиент выбрал идею 2 с несущественными правками, которые вносил уже мой коллега в связи с моим отпуском</p>
+
+        <p class="work__label work__label--brief">Правки</p>
+        <p class="work__text work__text--brief">Просят поменять 3D объекты - вместо первого (шар с дырками + крестик) и второго (красный диск) на более понятные и более связанные с обучением предметы</p>
+
+        <!-- Финальные баннеры крупно: высота ленты равна ширине окна разбора. -->
+        <div class="work__scroll carousel carousel--row carousel--square">
+          <div class="carousel__viewport">
+            <ul class="carousel__track">
+              <li class="carousel__slide" style="--ar: 1.771"><img src="assets/lic-final-1.jpg" width="1475" height="833" alt="Финальный баннер «Учись»" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 1.771"><img src="assets/lic-final-2.jpg" width="1473" height="832" alt="Финальный баннер «Мечтай»" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 1.771"><img src="assets/lic-final-3.jpg" width="1473" height="832" alt="Финальный баннер «Достигай»" data-zoom loading="lazy"></li>
+            </ul>
+          </div>
+          <button class="carousel__arrow carousel__arrow--prev" type="button" aria-label="Предыдущий баннер">‹</button>
+          <button class="carousel__arrow carousel__arrow--next" type="button" aria-label="Следующий баннер">›</button>
+        </div>
+
+        <p class="work__text">Перед днем знаний:</p>
+
+        <!-- Фотографии тоже крупно: высота ленты равна ширине окна разбора. -->
+        <div class="work__scroll carousel carousel--row carousel--square">
+          <div class="carousel__viewport">
+            <ul class="carousel__track">
+              <li class="carousel__slide" style="--ar: 1.068"><img src="assets/lic-phone.jpg" width="1389" height="1300" alt="Сообщение команды с фотографиями баннеров" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 1.333"><img src="assets/lic-school.jpg" width="1734" height="1301" alt="Готовые баннеры на фасаде лицея" data-zoom loading="lazy"></li>
+            </ul>
+          </div>
+          <button class="carousel__arrow carousel__arrow--prev" type="button" aria-label="Предыдущее фото">‹</button>
+          <button class="carousel__arrow carousel__arrow--next" type="button" aria-label="Следующее фото">›</button>
+        </div>
+
+        <p class="work__text">Второй год ещё не высветлилась краска)</p>
+
+        <div class="work__row">
+          <img src="assets/lic-year2.jpg" width="975" height="1300" alt="Фасад лицея через год" data-zoom loading="lazy">
+        </div>
+
+        <p class="work__date">август 2024</p>
+      </article>
+    </template>
+
+    <!-- Газета «Теребуты». Материалы из макета Алеси (terebuty.pdf). -->
+    <template id="detail-print5">
+      <article class="work">
+        <div class="work__row">
+          <img src="assets/ter-hero.jpg" width="1391" height="1396" alt="Стопка газет «Теребуты»" data-zoom loading="lazy">
+        </div>
+
+        <p class="work__label">Газета для загородного места</p>
+
+        <p class="work__text">Фриланс-проект для домика в деревне. Теребуты — это место для отдыха без городской шумихи. Изначально я без референсов накидала разноцветную стилистику газеты по присланному тексту и фотографиям местечка.</p>
+
+        <div class="work__row">
+          <img src="assets/ter-color-1.jpg" width="673" height="953" alt="Цветной вариант: первая полоса" data-zoom loading="lazy">
+          <img src="assets/ter-color-2.jpg" width="673" height="953" alt="Цветной вариант: разворот" data-zoom loading="lazy">
+        </div>
+
+        <p class="work__text">Я рисовала от руки, генерировала изображения животных, растений и предметов, накладывала слоями текстуры и фотографии, игралась с положением текста.</p>
+
+        <div class="work__row">
+          <img src="assets/ter-collage.jpg" width="1391" height="1279" alt="Коллаж из нарисованных и сгенерированных элементов" data-zoom loading="lazy">
+        </div>
+
+        <p class="work__text">Потом клиент решил отобразить газету в более сдержанном стиле.</p>
+
+        <!-- Референсы прислал клиент, поэтому красная подпись и отступы от обоих краёв,
+             как у блоков ТЗ. --f даёт обеим картинкам одну высоту. -->
+        <p class="work__label work__label--brief">Референсы:</p>
+
+        <div class="work__row work__row--brief work__row--ratio">
+          <img src="assets/ter-ref-1.jpg" width="698" height="928" style="--f: 0.752" alt="Референс: журнальный разворот" data-zoom loading="lazy">
+          <img src="assets/ter-ref-2.jpg" width="429" height="929" style="--f: 0.462" alt="Референс: пост в соцсети" data-zoom loading="lazy">
+        </div>
+
+        <p class="work__text">Тогда я ушла в чёрно-белую стилистику</p>
+
+        <div class="work__scroll carousel carousel--row" style="--row-h: 300px">
+          <div class="carousel__viewport">
+            <ul class="carousel__track">
+              <li class="carousel__slide" style="--ar: 0.707"><img src="assets/ter-bw-1.jpg" width="601" height="850" alt="Чёрно-белая полоса 1" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 0.707"><img src="assets/ter-bw-2.jpg" width="599" height="848" alt="Чёрно-белая полоса 2" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 0.707"><img src="assets/ter-bw-3.jpg" width="601" height="850" alt="Чёрно-белая полоса 3" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 0.707"><img src="assets/ter-bw-4.jpg" width="599" height="848" alt="Чёрно-белая полоса 4" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 0.707"><img src="assets/ter-bw-5.jpg" width="599" height="848" alt="Чёрно-белая полоса 5" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 0.707"><img src="assets/ter-bw-6.jpg" width="601" height="850" alt="Чёрно-белая полоса 6" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 0.707"><img src="assets/ter-bw-7.jpg" width="601" height="850" alt="Чёрно-белая полоса 7" data-zoom loading="lazy"></li>
+              <li class="carousel__slide" style="--ar: 0.707"><img src="assets/ter-bw-8.jpg" width="599" height="848" alt="Чёрно-белая полоса 8" data-zoom loading="lazy"></li>
+            </ul>
+          </div>
+          <button class="carousel__arrow carousel__arrow--prev" type="button" aria-label="Предыдущая полоса">‹</button>
+          <button class="carousel__arrow carousel__arrow--next" type="button" aria-label="Следующая полоса">›</button>
+        </div>
+
+        <div class="work__row">
+          <img src="assets/ter-blue-1.jpg" width="1391" height="1043" alt="Газета «Кулинарные истории»" data-zoom loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/ter-blue-2.jpg" width="1391" height="1043" alt="Первая полоса «Теребуты»" data-zoom loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/ter-blue-3.jpg" width="1391" height="1043" alt="Разворот с полезными приложениями" data-zoom loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/ter-house.jpg" width="1391" height="1482" alt="Домик в Теребутах" data-zoom loading="lazy">
+        </div>
+
+        <p class="work__date">октябрь 2024</p>
+      </article>
+    </template>
+
+    <!-- Парные часы для конкурса «Луч». Материалы с Behance Алеси
+         (behance.net/gallery/196374573), описание переведено с английского.
+         Анимации на Behance лежат гифками по 10–15МБ — пережаты в webm (VP9), у
+         каждой постер-кадр, чтобы в браузере без webm было что показать. -->
+    <template id="detail-print3">
+      <article class="work">
+        <video class="work__video" src="assets/watch-anim-1.webm" poster="assets/watch-anim-1.jpg" width="1200" height="676" data-autoplay muted loop playsinline preload="none" aria-label="Заставка презентации MUSTART 2024"></video>
+
+        <p class="work__label">Дизайн парных часов</p>
+
+        <p class="work__text">Проект для конкурса дизайнеров часового завода «Луч». В презентации я показываю свою визуальную идею для пары часов.</p>
+
+        <div class="work__row">
+          <img src="assets/watch-slide-1.webp" width="1400" height="800" alt="Идея: обменяться глазами" data-zoom loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/watch-slide-2.webp" width="1400" height="800" alt="Пара часов: «любовь в каждом взгляде»" data-zoom loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/watch-slide-3.webp" width="1400" height="800" alt="Разворот презентации" data-zoom loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/watch-slide-4.webp" width="1400" height="800" alt="Детали: циферблат, цвета pantone, ремешок" data-zoom loading="lazy">
+        </div>
+
+        <p class="work__text">Иллюстрации рисовала в Illustrator и Procreate, анимацию собирала в After Effects, обработка — в Photoshop.</p>
+
+        <video class="work__video" src="assets/watch-anim-2.webm" poster="assets/watch-anim-2.jpg" width="1200" height="676" data-autoplay muted loop playsinline preload="none" aria-label="Анимация часов, вариант 1"></video>
+
+        <video class="work__video" src="assets/watch-anim-3.webm" poster="assets/watch-anim-3.jpg" width="1200" height="676" data-autoplay muted loop playsinline preload="none" aria-label="Анимация часов, вариант 2"></video>
+
+        <p class="work__date">апрель 2024</p>
+      </article>
+    </template>
+
+    <!-- Журнал сестре. Картинки и описание взяты с Behance Алеси
+         (behance.net/gallery/170883179), текст переведён с английского. -->
+    <template id="detail-print6">
+      <article class="work">
+        <div class="work__row">
+          <img src="assets/mag-01.webp" width="1400" height="920" alt="Журнал и постеры разворотами" data-zoom loading="lazy">
+        </div>
+
+        <p class="work__label">Журнал на день рождения сестре</p>
+
+        <p class="work__text">Печатный журнал, который я сделала сестре на день рождения. Родные написали тёплые слова и прислали фотографии, а я собрала всё это в один весёлый журнал.</p>
+
+        <div class="work__row">
+          <img src="assets/mag-02.webp" width="1400" height="900" alt="Все развороты журнала" data-zoom loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/mag-03.webp" width="1400" height="933" alt="Обложка журнала и разворот про маму" data-zoom loading="lazy">
+        </div>
+
+        <p class="work__text">Каждый разворот старалась делать в своём стиле: яркие цвета, стикеры, разные шрифты и случайные рисунки — но по-дизайнерски. Референсы к большинству идей искала в пинтересте.</p>
+
+        <div class="work__row">
+          <img src="assets/mag-04.webp" width="1400" height="920" alt="Разворот с поздравлением" data-zoom loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/mag-05.webp" width="1400" height="933" alt="Разворот с фотографиями" data-zoom loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/mag-06.webp" width="1400" height="919" alt="Разворот с коллажем" data-zoom loading="lazy">
+        </div>
+
+        <p class="work__text">Фотографии обрабатывала и дорисовывала в Photoshop, а собирала всё в InDesign — это была моя первая работа в нём. Печать в CMYK.</p>
+
+        <div class="work__row">
+          <img src="assets/mag-07.webp" width="1400" height="1400" alt="Разворот «тётя Света»" data-zoom loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/mag-08.webp" width="1400" height="1400" alt="Разворот с поздравлением и фотографиями" data-zoom loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/mag-09.webp" width="1400" height="920" alt="Разворот журнала" data-zoom loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/mag-10.webp" width="1400" height="933" alt="Задняя обложка и разворот от всей семьи" data-zoom loading="lazy">
+        </div>
+
+        <!-- Видео со страницы проекта на Behance: там оно встроено плеером Adobe CCV,
+             поэтому качалось не как файл со страницы, а из плеера (720p). Со звуком. -->
+        <video class="work__video" src="assets/mag-video.mp4" width="1280" height="720" data-autoplay data-sound muted loop playsinline preload="none" aria-label="Видео с журналом"></video>
+
+        <div class="work__row">
+          <img src="assets/mag-thanks.gif" width="1400" height="73" alt="Бегущая строка «thank you»" loading="lazy">
+        </div>
+
+        <p class="work__date">май 2023</p>
+      </article>
+    </template>
+
+    <template id="detail-print2">
+      <article class="work">
+        <div class="work__row">
+          <img src="assets/print2.jpg" width="1024" height="1024" alt="Коробка «Карточки креативных методик»" loading="lazy">
+        </div>
+
+        <p class="work__label">Карточки креативных методик</p>
+
+        <p class="work__text">Фисташечки — это благотворительный проект, который мы делали в агентстве. Мои коллеги посещали Благотворительный фонд Алиса, и делали вместе с детьми креативные карточки для онлайн и оффлайн размещений. Подробнее про идею и реализацию можно почитать в посте агентства:</p>
+
+        <a class="work__button" href="https://t.me/fistashki_agency/533?single" target="_blank" rel="noopener">Ссылка на пост тг</a>
+
+        <p class="work__text">Моя задача заключалась в дизайне печатных карточек и коробки. Необходимо было "упаковать" 32 карточки с цитатами детей, сделать рубашку карт, вкладыш, дизайн коробки, подготовить все под печать и сделать цифровую версию для сайта и медиа.</p>
+
+        <div class="work__row">
+          <img src="assets/fist-photos.webp" width="1328" height="2000" alt="Пост с фотографиями напечатанных карточек и вкладыша" loading="lazy">
+        </div>
+
+        <p class="work__label work__label--brief">ТЗ на коробку</p>
+
+        <div class="work__row work__row--brief">
+          <img src="assets/fist-brief.jpg" width="1343" height="945" alt="ТЗ на коробку: развёртка с текстами" loading="lazy">
+        </div>
+
+        <p class="work__text">По моей инициативе согласились на том, чтобы сократить текст на коробке. Я печатала на домашнем принтере очень много разных вариантов, склеивала коробки на клей-карандаш, отправляла коллегам на согласование</p>
+
+        <div class="work__videos work__videos--pair">
+          <video class="work__video" src="assets/IMG_3434.mp4" width="720" height="1280" data-autoplay data-sound muted loop playsinline preload="none" aria-label="Склеенный вариант коробки, видео 1"></video>
+          <video class="work__video" src="assets/IMG_3435.mp4" width="720" height="1280" data-autoplay data-sound muted loop playsinline preload="none" aria-label="Склеенный вариант коробки, видео 2"></video>
+        </div>
+
+        <p class="work__label">Финальная версия вкладыша</p>
+
+        <div class="work__row">
+          <img src="assets/fist-insert-1.jpg" width="1338" height="573" alt="Вкладыш, внешняя сторона" loading="lazy">
+        </div>
+
+        <div class="work__row">
+          <img src="assets/fist-insert-2.jpg" width="1338" height="573" alt="Вкладыш, внутренняя сторона" loading="lazy">
+        </div>
+
+        <p class="work__label">Финальная версия карточек</p>
+
+        <div class="work__row">
+          <img src="assets/fist-card-1.jpg" width="658" height="1128" alt="Карточка с методикой «Минус — это плюс»" loading="lazy">
+          <img src="assets/fist-card-2.jpg" width="658" height="1128" alt="Рубашка карт с детскими рисунками" loading="lazy">
+        </div>
+
+        <p class="work__label">Финальная версия коробки</p>
+
+        <div class="work__row work__row--box">
+          <img src="assets/fist-box-plan.jpg" width="673" height="648" alt="Развёртка коробки под печать" loading="lazy">
+          <img src="assets/print2.jpg" width="1024" height="1024" alt="Коробка в объёме" loading="lazy">
+        </div>
+
+        <p class="work__text">Мои коллеги занимались упаковкой и оформлением подарков клиенту</p>
+
+        <div class="work__row work__row--gifts">
+          <img src="assets/fist-gift-1.jpg" width="710" height="533" alt="Подарочная упаковка с открыткой" loading="lazy">
+          <img src="assets/fist-gift-2.jpg" width="595" height="535" alt="Готовые коробки перед отправкой" loading="lazy">
+        </div>
+
+        <p class="work__label">Визуал поста для тг канала</p>
+
+        <div class="work__row">
+          <img src="assets/fist-post.jpg" width="1338" height="1338" alt="Визуал поста для телеграм-канала" loading="lazy">
+        </div>
+
+        <p class="work__date">декабрь 2025</p>
+      </article>
+    </template>
+  </section>

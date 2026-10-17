@@ -1,0 +1,19 @@
+<div class="modal" id="workModal" aria-hidden="true">
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-label="Подробнее о работе">
+    <button class="modal__close" type="button" data-close aria-label="Закрыть">&times;</button>
+    <!-- Работы с data-detail подставляют сюда свой разбор (карусель + тексты), и
+         тогда .modal__body прячется целиком. Остальные работы открываются как раньше. -->
+    <div class="modal__detail" id="modalDetail" hidden></div>
+    <div class="modal__body">
+      <div class="modal__media">
+        <img id="modalImg" src="" alt="">
+        <video id="modalVideo" controls playsinline hidden></video>
+      </div>
+      <div class="modal__info">
+        <p class="modal__desc" id="modalDesc">описание работы</p>
+        <p class="modal__date" id="modalDate" hidden></p>
+      </div>
+    </div>
+  </div>
+</div>

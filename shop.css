@@ -1,0 +1,432 @@
+/* ============================================================
+   МАГАЗИН
+   Подключается только на shop.html, поверх style.css. В style.css лежит общая база
+   (переменные, шрифты, шапка, подвал) и всё портфолио; здесь — только магазин.
+   Правило простое: если блок нужен обеим страницам, он живёт в style.css; если
+   только магазину — здесь.
+   ============================================================ */
+
+.page-shop {
+  /* Фон чуть темнее белого, как в макете. Волн портфолио здесь пока нет. */
+  background: #f1f1f4;
+}
+
+/* Фоновые рисунки намеренно вылезают за края секций. overflow-x у body для этого не
+   хватает: он всплывает к окну, и страница всё равно прокручивалась вбок. clip режет
+   лишнее, не делая из <html> прокручиваемый блок; hidden — запас для старых браузеров. */
+html:has(.page-shop) {
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+/* Обязательно вместе с правилом выше. В style.css у body стоит overflow-x: hidden —
+   пока <html> был «visible», это значение всплывало к окну и body оставался обычным
+   блоком. Как только у <html> появился свой overflow, body стал собственным
+   скроллером: по вертикали у него auto, прокручивать нечего (высота по контенту), а
+   overscroll-behavior: none не пускает прокрутку дальше к окну — колесо мыши
+   переставало листать страницу (клавиатура и скрипты работали). Возвращаем body
+   visible: обрезкой по горизонтали теперь занимается <html>. */
+.page-shop {
+  overflow-x: visible;
+}
+
+/* Колонка контента — та же ширина, что у портфолио (--container), и те же поля. */
+.page-shop main {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ---------- ФОНОВЫЕ РИСУНКИ ---------- */
+/* Бледные скетчи из макета. Лежат внутри секций, абсолютно спозиционированы от них,
+   поэтому едут вместе с контентом при любой ширине окна. z-index: -1 уводит их под
+   текст и товары, pointer-events: none — чтобы не перехватывали клики и выделение.
+   Размеры и позиции — в процентах от секции: так же, как в макете, но без привязки
+   к его фиксированной ширине 1920. Часть рисунков намеренно вылезает за края —
+   у body стоит overflow-x: hidden, горизонтальной прокрутки от них не появится. */
+.shop-decor {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  user-select: none;
+  height: auto;
+  /* В макете рисунки едва заметны. Прозрачность задана один раз здесь, чтобы
+     подкручивать «громкость» фона одним числом. */
+  opacity: 0.2;
+}
+
+.page-shop main,
+.shop-intro,
+.shop-section,
+.shop-outro {
+  position: relative;
+}
+
+/* Верх страницы: крупный скетч справа от заголовка и крылатое лицо у фотографии. */
+.shop-decor--1 { width: 58%; top: -46%; right: -12%; }
+.shop-decor--2 { width: 34%; top: 14%; right: -10%; }
+
+/* Холсты: слева и справа, по диагонали. */
+.shop-decor--3 { width: 52%; top: -28%; left: -20%; }
+.shop-decor--4 { width: 52%; top: 46%; right: -18%; }
+
+/* Постеры. */
+.shop-decor--5 { width: 56%; top: -18%; left: -16%; }
+
+/* Скетчи — самая длинная секция, три рисунка по её высоте. */
+.shop-decor--6 { width: 50%; top: 2%; left: -20%; }
+.shop-decor--7 { width: 36%; top: 6%; right: -14%; }
+/* Был на середине длинной секции скетчей и терялся за картинками — поднят к её
+   началу, в просвет между постерами и скетчами. */
+.shop-decor--8 { width: 38%; top: -14%; left: 16%; }
+
+/* Футболки: широкий рисунок за заголовком. */
+.shop-decor--9 { width: 72%; top: -6%; left: 12%; }
+
+/* Солнце перед подвалом. */
+.shop-decor--10 { width: 36%; top: -34%; right: -6%; }
+
+/* Самый верх страницы, над заголовком «магазин»: рисунок уходит за левый край. */
+.shop-decor--11 { width: 34%; top: -2%; left: -13%; }
+
+/* ---------- ЗАГОЛОВОК СТРАНИЦЫ ---------- */
+.shop__title {
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 500;
+  font-size: clamp(44px, 6vw, 86px);
+  line-height: 0.9;
+  text-align: center;
+  color: #000;
+  /* Сверху — тот же просвет, что от лого до заголовка. Снизу Алеся попросила вдвое
+     больше: знакомство отодвинуто от заголовка сильнее, чем заголовок от шапки. */
+  margin-top: clamp(40px, 6vw, 90px);
+  margin-bottom: calc(clamp(40px, 6vw, 90px) * 2);
+  transition: color 0.25s ease;
+}
+
+/* Заголовок краснеет под курсором. Ширина строки — по словам, а не на всю колонку,
+   чтобы реакция срабатывала на самом слове, а не на пустом месте рядом. */
+.shop__title {
+  width: fit-content;
+  margin-inline: auto;
+}
+
+.shop__title:hover {
+  color: var(--red);
+}
+
+/* ---------- ЗНАКОМСТВО ---------- */
+/* Фото слева, текст справа. Пара сдвинута к середине страницы: фото отступает от
+   левого края на половину своей ширины, и ровно столько же текст не доходит до
+   правого. Отступ один и тот же, поэтому «фото + описание» стоит по центру колонки,
+   как бы ни менялась ширина окна. Ширина фотографии задана переменной — от неё
+   считается и сам сдвиг, так что поправить нужно будет только одно число. */
+.shop-intro {
+  --photo-w: 31%;
+  --photo-shift: calc(var(--photo-w) / 2);
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(24px, 4vw, 60px);
+  margin-bottom: clamp(60px, 8vw, 120px);
+}
+
+/* Под курсором углы распрямляются — как у карточек работ на портфолио. */
+.shop-intro__photo {
+  /* В полтора раза меньше прежнего (было 46%) — Алеся попросила убавить. */
+  flex: 0 1 var(--photo-w);
+  width: var(--photo-w);
+  margin-left: var(--photo-shift);
+  height: auto;
+  border-radius: var(--radius-card);
+  transition: border-radius 0.35s ease;
+}
+
+.shop-intro__photo:hover {
+  border-radius: 0;
+}
+
+.shop-intro__text {
+  flex: 1 1 0;
+  margin-right: var(--photo-shift);
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 500;
+  font-size: clamp(17px, 1.45vw, 26px);
+  line-height: 1.25;
+  color: var(--ink);
+  /* Текст прижат к верху и низу фотографии, как в макете: «Привет» вровень с её
+     верхним краем, строка про заказы — у нижнего. */
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  padding-top: clamp(4px, 1vw, 16px);
+}
+
+.shop-intro__text p {
+  margin: 0 0 1.4em;
+}
+
+.shop-intro__text .shop-intro__order {
+  margin-top: auto;
+  margin-bottom: 0;
+}
+
+.shop-intro__text .shop-intro__order a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.shop-intro__text .shop-intro__order a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- СЕКЦИИ ---------- */
+.shop-section {
+  margin-bottom: clamp(60px, 8vw, 120px);
+}
+
+.shop-section__title {
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 500;
+  font-size: clamp(17px, 1.5vw, 28px);
+  line-height: 1.2;
+  text-align: center;
+  color: var(--red);
+  margin: 0 0 10px;
+}
+
+/* Подложка в цвет фона: заголовки секций и подписи под ними часто попадают прямо на
+   фоновый скетч, и тонкие линии рисунка лезли в буквы. Несколько слоёв «свечения»
+   фоновым цветом гасят рисунок вокруг текста, не рисуя заметной плашки. */
+.shop-section__title,
+.shop-section__note,
+.shop-price {
+  text-shadow:
+    0 0 4px #f1f1f4,
+    0 0 8px #f1f1f4,
+    0 0 8px #f1f1f4,
+    0 0 14px #f1f1f4,
+    0 0 14px #f1f1f4,
+    0 0 22px #f1f1f4,
+    0 0 22px #f1f1f4,
+    0 0 30px #f1f1f4;
+}
+
+/* Названия разделов ещё и убегают от курсора (js/shop.js), поэтому им нужен свой
+   переход — такой же, как у заголовков категорий на портфолио. */
+.shop-section__title {
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
+}
+
+.shop-section__note,
+.shop-price {
+  font-family: 'Moula', 'Nunito', sans-serif;
+  font-weight: 400;
+  font-size: clamp(14px, 1.1vw, 20px);
+  line-height: 1.35;
+  text-align: center;
+  color: var(--ink);
+  margin: 0 0 clamp(24px, 3vw, 40px);
+}
+
+.shop-price {
+  list-style: none;
+  padding: 0;
+}
+
+/* ---------- СЕТКА ТОВАРОВ ---------- */
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(16px, 2.6vw, 46px) clamp(16px, 2.6vw, 46px);
+}
+
+.shop-card {
+  margin: 0;
+}
+
+/* Под курсором у картинки скругляются углы, и она открывается во весь экран по клику
+   (js/shop.js). Скругление — то же значение, что у карточек работ на портфолио. */
+/* Каждая работа лежит в рамке с обрезкой: сама рамка на месте и не меняет размер, а
+   под курсором наезжает только изображение внутри неё. Скругление тоже на рамке —
+   иначе уголки картинки вылезали бы из-под обрезки. */
+.shop-frame {
+  display: block;
+  overflow: hidden;
+  border-radius: 0;
+  cursor: zoom-in;
+  transition: border-radius 0.35s ease;
+}
+
+.shop-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform 0.45s ease;
+}
+
+.shop-frame:hover {
+  border-radius: var(--radius-card);
+}
+
+.shop-frame:hover img {
+  transform: scale(1.06);
+}
+
+/* Постеры — одного размера: ширина от сетки, высота по общим пропорциям 0.78, лишнее
+   подрезается по центру. Исходники чуть разной формы (0.80, 0.78, 0.75), и без этого
+   ряд заканчивался тремя разными линиями. Пропорции держит рамка, картинка заполняет
+   её целиком. */
+.shop-grid--plain .shop-frame {
+  aspect-ratio: 78 / 100;
+}
+
+.shop-grid--plain .shop-frame img {
+  height: 100%;
+  object-fit: cover;
+}
+
+.shop-card figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 12px;
+  font-family: 'Moula', 'Nunito', sans-serif;
+  line-height: 1.1;
+}
+
+/* Размер холста подрастает под курсором и возвращается, когда курсор ушёл.
+   Масштабируем transform'ом, а не font-size: строка не переверстывается, соседние
+   подписи не дёргаются. Точка роста — левый край, чтобы подпись не наезжала на
+   соседнюю колонку. */
+.shop-card__name {
+  font-weight: 500;
+  font-size: clamp(15px, 1.3vw, 24px);
+  color: var(--ink);
+  transform-origin: left center;
+  transition: transform 0.25s ease;
+}
+
+.shop-card figcaption:hover .shop-card__name {
+  transform: scale(1.18);
+}
+
+/* Уточнение в скобках — тем же цветом, но мельче: это часть названия, а не отдельная
+   строка. */
+.shop-card__note {
+  font-weight: 400;
+  font-size: 0.72em;
+}
+
+.shop-card__price {
+  font-weight: 500;
+  font-size: clamp(15px, 1.3vw, 24px);
+  color: var(--red);
+}
+
+/* ---------- КЛАДКА СКЕТЧЕЙ ---------- */
+/* columns, а не grid: высота у скетчей разная, и колонки должны набираться
+   независимо, иначе в сетке остаются дыры под низкими картинками. */
+/* Колонки тянутся до высоты самой длинной, а лишнее добирает последняя картинка в
+   колонке: она растягивается и подрезается по центру (object-fit: cover). Так кладка
+   заканчивается одной линией, как в макете, а не лесенкой. Разница между колонками
+   небольшая, поэтому подрезка почти незаметна. */
+.shop-masonry {
+  display: flex;
+  align-items: stretch;
+  gap: clamp(16px, 2.6vw, 46px);
+}
+
+.shop-masonry__col .shop-frame:last-child {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.shop-masonry__col .shop-frame:last-child img {
+  height: 100%;
+  object-fit: cover;
+}
+
+.shop-masonry__col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2.6vw, 46px);
+}
+
+/* ---------- СОЛНЦЕ ПЕРЕД ПОДВАЛОМ ---------- */
+.shop-outro {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Рисунок подставляется маской, а цветом заливки управляет background: в покое он
+   почти чёрный, под курсором синий. Пропорции — из файла (1000×916). Солнце ещё и
+   убегает от курсора (js/shop.js), отсюда переход для transform. */
+.shop__sun {
+  display: block;
+  width: clamp(200px, 26vw, 330px);
+  aspect-ratio: 1000 / 916;
+  margin: clamp(40px, 6vw, 80px) auto 0;
+  background-color: var(--ink);
+  -webkit-mask: url('assets/shop/sun.png') center / contain no-repeat;
+  mask: url('assets/shop/sun.png') center / contain no-repeat;
+  transition: background-color 0.25s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shop__sun:hover {
+  background-color: var(--blue);
+}
+
+/* ---------- ТЕЛЕФОН ---------- */
+@media (max-width: 900px) {
+  .shop-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Три узкие колонки на планшете уже не читаются: распускаем их (display: contents
+     убирает сам контейнер колонки из раскладки) и пускаем картинки общим потоком в
+     две колонки. */
+  .shop-masonry {
+    display: block;
+    columns: 2;
+    column-gap: clamp(16px, 2.6vw, 46px);
+  }
+
+  .shop-masonry__col {
+    display: contents;
+  }
+
+  .shop-masonry .shop-frame {
+    margin-bottom: clamp(16px, 2.6vw, 46px);
+    break-inside: avoid;
+  }
+
+  /* В колонках планшета растягивать последнюю картинку незачем: поток общий. */
+  .shop-masonry__col .shop-frame:last-child img {
+    height: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Знакомство в столбик: в две колонки фотография и текст становятся слишком узкими. */
+  .shop-intro {
+    flex-direction: column;
+  }
+
+  /* В столбик сдвиг к центру теряет смысл: фото и текст и так во всю ширину. */
+  .shop-intro__photo {
+    flex: none;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .shop-intro__text {
+    margin-right: 0;
+  }
+
+  .shop-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
