@@ -1141,13 +1141,18 @@
     };
   }
 
-  // Видео в разборе играют, только пока видны в окне. В разборе куба их шесть, и
-  // вместе они весят ~38МБ: с обычным autoplay все шесть начали бы грузиться и
-  // крутиться в момент открытия, хотя видно из них одно-два, — на телефоне это и
-  // трафик, и батарея. Поэтому у таких видео нет autoplay, есть data-autoplay и
-  // preload="none": файл не качается, пока видео не подъедет к краю окна (запас
-  // 200px, чтобы успело стартовать до появления), а ушедшее из вида ставится на паузу.
-  function initDetailVideos(root) {
+  // Видео играют, только пока видны. Сначала это было про разборы (в разборе куба
+  // роликов шесть, вместе ~38МБ: с обычным autoplay все шесть начали бы грузиться и
+  // крутиться в момент открытия, хотя видно одно-два), а потом тем же способом
+  // поехали и карточки работ в сетке: девять штук с autoplay тянули файлы все разом,
+  // и на телефоне, где видно четыре карточки, последняя оживала заметно позже
+  // остальных. Поэтому у таких видео нет autoplay, есть data-autoplay: файл
+  // докачивается и запускается, когда видео подъезжает к краю окна (запас 200px,
+  // чтобы успело стартовать до появления), а ушедшее из вида встаёт на паузу.
+  //
+  // scrollRoot — что считать «окном»: у разбора это сама панель модалки (она и
+  // прокручивается), у сетки работ — null, то есть окно браузера.
+  function initLazyVideos(root, scrollRoot) {
     var videos = root.querySelectorAll('video[data-autoplay]');
     if (!videos.length) return null;
 
@@ -1161,14 +1166,29 @@
         var v = entry.target;
         if (entry.isIntersecting) {
           v.preload = 'auto';
-          // play() отклоняется, если окно закрыли раньше, чем видео стартовало, —
-          // это ожидаемо, а не ошибка.
-          v.play().catch(function () {});
+          // Сафари на айфоне не начинает качать файл от одной смены preload — ему
+          // нужен явный load(). Без него видео в разборах на телефоне так и висели
+          // пустыми. Вызываем только когда не загружено ничего (readyState 0), иначе
+          // load() сбросил бы уже идущее воспроизведение.
+          if (v.readyState === 0) v.load();
+
+          var started = v.play();
+          if (started && started.catch) {
+            started.catch(function (err) {
+              // AbortError — это окно закрыли раньше, чем видео стартовало, дело
+              // житейское. А вот NotAllowedError значит, что автозапуск запретили:
+              // на айфоне так делает режим энергосбережения, на андроиде — экономия
+              // трафика. Тогда отдаём человеку родные контролы: пустой прямоугольник
+              // хуже, чем кнопка «играть».
+              if (err && err.name === 'AbortError') return;
+              v.controls = true;
+            });
+          }
         } else {
           v.pause();
         }
       });
-    }, { root: root, rootMargin: '200px 0px' });
+    }, { root: scrollRoot === undefined ? root : scrollRoot, rootMargin: '200px 0px' });
 
     videos.forEach(function (v) { observer.observe(v); });
 
@@ -1439,7 +1459,7 @@
       if (t) teardowns.push(t);
     });
 
-    var videoTeardown = initDetailVideos(modalDetail);
+    var videoTeardown = initLazyVideos(modalDetail);
     if (videoTeardown) teardowns.push(videoTeardown);
 
     var soundTeardown = initSoundButtons(modalDetail);
@@ -1460,7 +1480,12 @@
     return true;
   }
 
+  // Какая работа сейчас открыта — нужно свайпу, чтобы знать, от чего отсчитывать
+  // соседей.
+  var currentMedia = null;
+
   function openModal(media) {
+    currentMedia = media;
     if (openDetail(media)) {
       modal.classList.add('is-open');
       modal.setAttribute('aria-hidden', 'false');
@@ -1538,6 +1563,76 @@
     el.addEventListener('click', closeModal);
   });
 
+  // ---------- Свайп между работами ----------
+  // На телефоне окно работы занимает весь экран, и вернуться в сетку ради соседней
+  // работы — три движения. Свайп влево открывает следующую, вправо — предыдущую, по
+  // кругу внутри своего раздела: из последней работы печатки попадаешь в первую
+  // работу печатки, а не в диджитал. Считаются все работы раздела, даже скрытые
+  // свёрнутой сеткой: человек, который листает разборы, уже «внутри», и упираться в
+  // невидимую границу ему незачем.
+  //
+  // Только палец: на компьютере для этого есть мышь и клавиатура, а ловить
+  // горизонтальные жесты тачпада значит ловить и обычную прокрутку вбок.
+  (function initWorkSwipe() {
+    var SWIPE_MIN = 60;        // px, короче — случайное дёрганье пальцем
+    var SWIPE_RATIO = 1.5;     // горизонталь должна быть настолько длиннее вертикали
+    var panel = modal.querySelector('.modal__panel');
+    if (!panel) return;
+
+    var startX = 0, startY = 0, tracking = false;
+
+    function siblings() {
+      if (!currentMedia) return [];
+      var section = currentMedia.closest('.portfolio');
+      if (!section) return [];
+      return Array.prototype.slice.call(section.querySelectorAll('.card img, .card video'));
+    }
+
+    function go(step) {
+      var list = siblings();
+      var i = list.indexOf(currentMedia);
+      if (i === -1 || list.length < 2) return;
+      var next = list[(i + step + list.length) % list.length];
+      // Короткое затемнение панели: без него свайп между похожими работами выглядит
+      // так, будто ничего не произошло.
+      panel.classList.add('is-swapping');
+      setTimeout(function () {
+        openModal(next);
+        panel.classList.remove('is-swapping');
+      }, 160);
+    }
+
+    panel.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1) { tracking = false; return; }
+      // Ленты внутри разбора прокручиваются вбок сами — их жесты не наши.
+      if (e.target.closest && e.target.closest('.carousel, .zoom')) { tracking = false; return; }
+      tracking = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+
+    panel.addEventListener('touchend', function (e) {
+      if (!tracking) return;
+      tracking = false;
+      var t = e.changedTouches && e.changedTouches[0];
+      if (!t) return;
+      var dx = t.clientX - startX;
+      var dy = t.clientY - startY;
+      if (Math.abs(dx) < SWIPE_MIN) return;
+      // Вертикаль важнее: страницу внутри окна листают вверх-вниз постоянно, и
+      // наклонное движение не должно подменять работу.
+      if (Math.abs(dx) < Math.abs(dy) * SWIPE_RATIO) return;
+      go(dx < 0 ? 1 : -1);
+    }, { passive: true });
+  })();
+
+  // ---------- Видео карточек в сетке ----------
+  // Те же ленивые видео, что в разборах, только «окно» здесь обычное — браузерное.
+  // Отписка не нужна: сетка живёт столько же, сколько страница. Скрытые карточки
+  // (свёрнутая сетка) наблюдатель не считает видимыми, поэтому их файлы не качаются
+  // вовсе, пока не нажмут «смотреть ещё».
+  initLazyVideos(document, null);
+
   // ---------- "Заказать анимацию" CTA card + modal ----------
   var orderModal = document.getElementById('orderModal');
   var ctaCard = document.querySelector('.card--cta');
@@ -1573,13 +1668,71 @@
   var authorModal = document.getElementById('authorModal');
   var authorModalImg = document.getElementById('authorModalImg');
   var authorNextBtn = document.getElementById('authorModalNext');
+  var authorPrevBtn = document.getElementById('authorModalPrev');
   var authorPhoto = document.querySelector('.about__photo');
-  var authorPhotos = ['assets/portrait.jpg', 'assets/portrait.jpg', 'assets/portrait.jpg'];
+
+  // Три фотографии, крутятся по кругу в обе стороны. Окно квадратное, а снимки
+  // разной формы, поэтому у каждого своё `pos` — куда сдвинуть кадр при обрезке в
+  // квадрат (object-position). Горизонтальной хватает центра: по бокам она
+  // обрезается, а по высоте входит целиком. Вертикальную тянем вверх: лицо в
+  // верхней трети, по центру обрезало бы его.
+  var AUTHOR_PHOTOS = [
+    { src: 'assets/portrait.jpg', pos: '27% center', alt: 'Фото Алеси Мал' },
+    { src: 'assets/portrait-2.webp', pos: 'center center', alt: 'Алеся на фоне города' },
+    { src: 'assets/portrait-3.jpg', pos: 'center 18%', alt: 'Алеся в кафе' }
+  ];
   var authorIndex = 0;
+
+  /* Показывает снимок целиком: и файл, и кадрирование, и подпись — но только когда
+     файл уже в памяти браузера.
+
+     Иначе получался рывок: src меняется мгновенно, а картинка доезжает через
+     мгновение, и всё это время в окне висит ПРЕДЫДУЩИЙ снимок — уже с чужим
+     object-position. То есть старая фотография на долю секунды дёргалась вбок,
+     прежде чем смениться. Поэтому сначала ждём загрузки в невидимый Image, и лишь
+     потом переставляем всё разом. Файл из кэша отдаётся сразу (complete === true),
+     так что второй проход по кругу мгновенный. */
+  function showAuthorPhoto() {
+    var photo = AUTHOR_PHOTOS[authorIndex];
+    var loader = new Image();
+
+    function put() {
+      // Пока файл ехал, могли нажать стрелку ещё раз — тогда этот кадр уже не нужен.
+      if (AUTHOR_PHOTOS[authorIndex] !== photo) return;
+      authorModalImg.src = photo.src;
+      authorModalImg.style.objectPosition = photo.pos;
+      // Подпись рождается в коде, поэтому переводчик её не видит — зовём словарь сами
+      // (на русской версии I18N.t вернёт строку как есть).
+      authorModalImg.alt = window.I18N ? I18N.t(photo.alt) : photo.alt;
+    }
+
+    loader.src = photo.src;
+    if (loader.decode) {
+      // decode() ждёт не только загрузки, но и распаковки кадра — после него подмена
+      // src рисуется в том же кадре, без мигания. Любая осечка (старый браузер,
+      // битый файл) уводит в put(): пустое окно хуже, чем кадр не по центру.
+      loader.decode().then(put).catch(put);
+    } else if (loader.complete) {
+      put();
+    } else {
+      loader.onload = put;
+      loader.onerror = put;
+    }
+  }
+
+  // Остальные снимки подтягиваем в фоне, как только окно открыли: к моменту, когда
+  // человек нажмёт стрелку, они уже в кэше и листание мгновенное.
+  function preloadAuthorPhotos() {
+    AUTHOR_PHOTOS.forEach(function (photo) {
+      var img = new Image();
+      img.src = photo.src;
+    });
+  }
 
   function openAuthorModal() {
     authorIndex = 0;
-    authorModalImg.src = authorPhotos[authorIndex];
+    showAuthorPhoto();
+    preloadAuthorPhotos();
     authorModal.classList.add('is-open');
     authorModal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
@@ -1603,9 +1756,22 @@
     });
   }
 
-  authorNextBtn.addEventListener('click', function () {
-    authorIndex = (authorIndex + 1) % authorPhotos.length;
-    authorModalImg.src = authorPhotos[authorIndex];
+  // Листание по кругу: + длина перед остатком, иначе шаг назад с первой фотографии
+  // дал бы -1 вместо последней.
+  function stepAuthorPhoto(delta) {
+    authorIndex = (authorIndex + delta + AUTHOR_PHOTOS.length) % AUTHOR_PHOTOS.length;
+    showAuthorPhoto();
+  }
+
+  authorNextBtn.addEventListener('click', function () { stepAuthorPhoto(1); });
+  authorPrevBtn.addEventListener('click', function () { stepAuthorPhoto(-1); });
+
+  // Стрелки на клавиатуре — то же листание. Esc закрывает окно общим обработчиком
+  // ниже, вместе с остальными модалками.
+  document.addEventListener('keydown', function (e) {
+    if (!authorModal.classList.contains('is-open')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); stepAuthorPhoto(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); stepAuthorPhoto(-1); }
   });
 
   authorModal.querySelectorAll('[data-close-author]').forEach(function (el) {

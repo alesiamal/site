@@ -49,6 +49,9 @@
   var ATTRS = ['alt', 'title', 'aria-label', 'placeholder', 'href', 'data-desc', 'data-date'];
 
   var dict = window.I18N_EN || {};
+  // Язык, на котором страница показана сейчас. Ставится в apply() один раз и нужен
+  // t(): на русской версии переводить нечего.
+  var active = DEFAULT;
 
   function norm(s) {
     return String(s).replace(/\s+/g, ' ').trim();
@@ -112,8 +115,12 @@
     try { localStorage.setItem(KEY, value); } catch (e) {}
   }
 
-  // Перевод одной строки. Если её нет в словаре — возвращаем как есть.
+  /* Перевод одной строки — для подписей, которые рождаются в коде (их переводчик не
+     видит, см. initSoundButtons и окно знакомства в main.js). Если её нет в словаре
+     или версия русская, возвращаем как есть: словарь сам по себе не знает, на каком
+     языке сейчас страница, а звать его из кода можно и там, и там. */
   function t(s) {
+    if (active !== 'en') return s;
     var hit = dict[norm(s)];
     return hit === undefined ? s : hit;
   }
@@ -213,6 +220,7 @@
 
   function apply() {
     var current = lang();
+    active = current;
     wireButtons(current);
     if (current !== 'en') return;
     document.documentElement.lang = 'en';

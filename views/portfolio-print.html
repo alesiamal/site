@@ -1,7 +1,11 @@
   <!-- ПЕЧАТКА -->
-  <!-- Файлы называются print1…print6 по порядку показа в сетке — та же договорённость,
-       что и у anim1…anim9 в диджитале. При перестановке работ переименовывай файлы
-       в assets/, а не только меняй src, иначе номер перестанет совпадать с позицией.
+  <!-- Номер в имени файла (print1…print9, как и anim1…anim9 в диджитале) — это
+       порядок ПОЯВЛЕНИЯ работы на сайте, а не её место в сетке. Когда-то они
+       совпадали, но работы с тех пор не раз переставляли, и гоняться за совпадением
+       смысла нет: переименование тянет за собой и файл, и id разбора, и ссылки в нём,
+       а в истории репозитория оставляет копию каждого переименованного мегабайта.
+       Порядок показа задаётся здесь, порядком <figure> в сетке. 18.10.2026 он такой:
+       хехе, Теребуты, MUSTART, журнал, карточки методик, баннеры лицея.
        print7, print8 и print9 лежат в assets/, но со страницы убраны: print9 — меню
        кофейни giraf, оно ушло с сетки при перестановке 01.10.2026. -->
   <section class="portfolio" id="print">
@@ -10,22 +14,22 @@
       <figure class="card">
         <img src="assets/print1.jpg" data-detail="detail-print1" alt="Леттеринг «хехе»" loading="lazy">
       </figure>
-      <figure class="card">
-        <img src="assets/print2.jpg" data-detail="detail-print2" alt="Упаковка карточек креативных методик Fistashki" loading="lazy">
+      <figure class="card card--gray">
+        <img src="assets/print5.jpg" data-detail="detail-print5" alt="Газета «Теребуты»" loading="lazy">
       </figure>
       <figure class="card">
         <img src="assets/print3.jpg" data-detail="detail-print3" alt="Конкурс MUSTART 2024" loading="lazy">
       </figure>
       <figure class="card">
-        <img src="assets/print4.jpg" data-detail="detail-print4" alt="Оформление фасада лицея №102" loading="lazy">
-      </figure>
-      <figure class="card card--gray">
-        <img src="assets/print5.jpg" data-detail="detail-print5" alt="Газета «Теребуты»" loading="lazy">
-      </figure>
-      <figure class="card">
         <img src="assets/print6.jpg" data-detail="detail-print6" alt="Журнал ко дню рождения" loading="lazy">
       </figure>
-    </div>
+      <figure class="card">
+        <img src="assets/print2.jpg" data-detail="detail-print2" alt="Упаковка карточек креативных методик Fistashki" loading="lazy">
+      </figure>
+      <figure class="card">
+        <img src="assets/print4.jpg" data-detail="detail-print4" alt="Оформление фасада лицея №102" loading="lazy">
+      </figure>
+</div>
     <div class="section-more">
       <button class="btn-more" type="button">смотреть ещё</button>
       <button class="btn-hide" type="button" hidden>скрыть</button>

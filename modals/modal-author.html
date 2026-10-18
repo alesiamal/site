@@ -2,9 +2,16 @@
   <div class="modal__backdrop" data-close-author></div>
   <div class="modal__panel modal__panel--author" role="dialog" aria-modal="true" aria-label="Фото Алеси Мал">
     <button class="modal__close" type="button" data-close-author aria-label="Закрыть">&times;</button>
+    <!-- Окно квадратное и ровно такое, какое влезает в экран (см. .author-modal__media
+         в style.css). Фотографии разной формы, поэтому каждая кадрируется в квадрат
+         по месту — object-position у каждой свой, его ставит main.js. -->
     <div class="author-modal__media">
-      <img id="authorModalImg" src="assets/portrait.jpg" alt="Алеся Мал">
+      <img id="authorModalImg" src="assets/portrait.jpg" alt="Фото Алеси Мал">
     </div>
-    <button class="author-modal__arrow" type="button" id="authorModalNext" aria-label="Следующее фото">&rsaquo;</button>
+    <!-- Две стрелки: три фотографии крутятся по кругу в обе стороны. Лежат поверх
+         снимка по краям, поэтому у них своя подложка — на тёмном кадре чёрная
+         стрелка пропала бы. -->
+    <button class="author-modal__arrow author-modal__arrow--prev" type="button" id="authorModalPrev" aria-label="Предыдущее фото">&lsaquo;</button>
+    <button class="author-modal__arrow author-modal__arrow--next" type="button" id="authorModalNext" aria-label="Следующее фото">&rsaquo;</button>
   </div>
 </div>

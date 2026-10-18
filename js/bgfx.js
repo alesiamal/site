@@ -27,8 +27,24 @@
   var IDLE_AFTER = 120;        // мс покоя курсора, после которых линза уезжает
 
   if (!window.matchMedia) return;
-  if (!matchMedia('(pointer: fine)').matches) return;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  /* Палец вместо курсора. Раньше на телефоне скрипт выходил целиком, и фон там был
+     мёртвый. Теперь остаётся, но ведёт себя иначе: капля падает только от касания,
+     а не от каждого движения. Причина не в вежливости, а в прокрутке — палец
+     двигается по экрану именно тогда, когда страница едет, и волны на каждом таком
+     движении означали бы перерисовку холста весь скролл. Линза при этом работает
+     как была: от касания просыпается на мгновение и гаснет, так что видно, откуда
+     пошла волна. */
+  var coarse = !matchMedia('(pointer: fine)').matches;
+
+  // На телефоне события приходят с pointerType 'touch', на компьютере — 'mouse'.
+  // Чужой тип игнорируем: мышь, подключённая к планшету, не должна будить волны
+  // движением, если страница уже решила, что она «пальцевая», и наоборот.
+  function foreign(e) {
+    if (!e.pointerType) return false;
+    return coarse ? e.pointerType === 'mouse' : e.pointerType !== 'mouse';
+  }
 
   var canvas = document.createElement('canvas');
   canvas.className = 'bgfx';
@@ -259,7 +275,8 @@
   }, { passive: true });
 
   window.addEventListener('pointermove', function (e) {
-    if (e.pointerType && e.pointerType !== 'mouse') return;
+    // Движение пальцем — это почти всегда прокрутка, волны от него не роняем.
+    if (coarse || foreign(e)) return;
     var now = performance.now();
     mouse[0] = e.clientX;
     mouse[1] = e.clientY;
@@ -286,7 +303,7 @@
   // Клик роняет каплю и там, где курсор стоит неподвижно: волна сильнее, чем от
   // быстрого движения, и линза на миг просыпается, чтобы было видно, откуда пошло.
   window.addEventListener('pointerdown', function (e) {
-    if (e.pointerType && e.pointerType !== 'mouse') return;
+    if (foreign(e)) return;
     mouse[0] = e.clientX;
     mouse[1] = e.clientY;
     lastMove = performance.now();

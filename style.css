@@ -1875,14 +1875,35 @@ html[lang="en"] .hero__mascot {
   justify-content: center;
 }
 
-.modal__panel--author {
-  width: min(560px, 92vw);
-  padding: 0;
+/* Панель обнимает саму фотографию: ширину задаёт квадрат внутри, а не панель.
+   Скругление и обрезка — на самой фотографии, а не здесь: у панели снаружи висит
+   крестик (top/right: -14px), и overflow: hidden срезал бы его. */
+/* Короткое затемнение при свайпе между работами: без него подмена содержимого
+   выглядит как «ничего не произошло». Длительность согласована с паузой в main.js
+   (initWorkSwipe), иначе панель вернулась бы в цвет раньше, чем сменилось
+   содержимое. */
+.modal__panel.is-swapping {
+  opacity: 0.15;
+  transition: opacity 0.16s ease;
 }
 
+.modal__panel--author {
+  width: auto;
+  max-height: none;
+  padding: 0;
+  background: none;
+}
+
+/* Квадрат ровно такой, какой влезает в экран: по ширине или по высоте — что
+   меньше. Фотографии у Алеси разной формы (горизонтальная, вертикальная,
+   альбомная), поэтому каждая кадрируется в квадрат через object-fit: cover, а куда
+   именно её сдвинуть при обрезке — говорит object-position, свой у каждой (ставит
+   main.js, см. AUTHOR_PHOTOS). */
 .author-modal__media {
-  aspect-ratio: 3 / 4;
-  max-height: 82vh;
+  aspect-ratio: 1 / 1;
+  width: min(92vw, 86vh);
+  overflow: hidden;
+  border-radius: var(--radius-card);
 }
 
 .author-modal__media img {
@@ -1895,7 +1916,6 @@ html[lang="en"] .hero__mascot {
 .author-modal__arrow {
   position: absolute;
   top: 50%;
-  right: 16px;
   transform: translateY(-50%);
   width: 44px;
   height: 44px;
@@ -1911,6 +1931,9 @@ html[lang="en"] .hero__mascot {
   justify-content: center;
   transition: background 0.2s ease;
 }
+
+.author-modal__arrow--prev { left: 16px; }
+.author-modal__arrow--next { right: 16px; }
 
 .author-modal__arrow:hover {
   background: #ffffff;
@@ -1986,59 +2009,122 @@ html[lang="en"] .hero__mascot {
 }
 
 @media (max-width: 640px) {
+  /* Первый экран занимает экран целиком, а заголовок стоит примерно по его центру
+     (макет mobile.pdf). Линия при этом уезжает под сгиб: .hero__inner забирает всю
+     высоту экрана и центрирует группу внутри себя, а линия идёт уже следующим
+     блоком со своим отступом — чтобы её увидеть, надо чуть пролистать, как в макете.
+     100svh, а не 100vh: на телефоне vh считается по экрану БЕЗ адресной строки, и
+     первый экран оказывался бы выше видимой области. Строка с vh оставлена запасной
+     для браузеров постарше. */
+  .hero {
+    padding: 44px 16px 0;
+  }
+
+  /* Первый экран — это именно .hero__inner: он занимает всё, что осталось от экрана
+     после шапки и верхнего отступа, и центрирует внутри себя группу «скоро будет /
+     ЗА◆●ИСЬ». Линия идёт уже следующим блоком, то есть уезжает под сгиб, — чтобы её
+     увидеть, надо чуть пролистать, как в макете mobile.pdf.
+     100svh, а не 100vh: на телефоне vh считается по экрану БЕЗ адресной строки, и
+     экран получился бы выше видимой области. Строка с vh оставлена запасной для
+     браузеров постарше.
+     58px — высота шапки: на телефоне она постоянна (лого упирается в минимум 28px
+     своего clamp плюс поля), поэтому вынесена числом с этим объяснением. */
+  .hero__inner {
+    --header-h: 58px;
+    --hero-pad-top: 44px;
+    min-height: calc(100vh - var(--header-h) - var(--hero-pad-top));
+    min-height: calc(100svh - var(--header-h) - var(--hero-pad-top));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
   .hero__eyebrow {
-    font-size: 7.8vw;
+    font-size: 9.2vw;
   }
 
   .hero__title {
     font-size: 20vw;
   }
 
+  /* Подписи вокруг заголовка на телефоне крупнее: доля от кегля заголовка, поэтому
+     задаётся в em (0.15 на компьютере). */
+  .hero__label {
+    font-size: 0.2em;
+  }
+
+  /* «дизайн» и «анимация» поднимаются выше «скоро будет» — в макете они над ним, а
+     не вровень. Отступ считается от их собственного кегля, и его должно хватить,
+     чтобы перепрыгнуть строку «скоро будет» целиком. */
+  .hero__label--tl,
+  .hero__label--tr {
+    margin-bottom: 3.1em;
+  }
+
+  /* Знакомство в один столбец: фотография сверху и горизонтальная, описание под ней.
+     В две колонки на телефоне и фото, и текст получались слишком узкими. */
   .about {
-    grid-template-columns: 120px 1fr;
-    gap: 20px;
+    grid-template-columns: 1fr;
+    gap: 18px;
     padding-bottom: 70px;
   }
 
   .about__photo img {
-    aspect-ratio: 3/4;
-    object-position: 27% top;
+    /* Родные пропорции снимка (1280×853) — кадрировать нечего, фотография видна
+       целиком. */
+    aspect-ratio: 3 / 2;
+    object-position: center center;
   }
 
   .about__name {
-    font-size: 12px;
-    margin: 0 0 2px;
+    font-size: 19px;
+    margin: 0 0 4px;
   }
 
   .about__role {
-    font-size: 12px;
-    margin: 0 0 6px;
+    font-size: 17px;
+    margin: 0 0 12px;
   }
 
-  /* Текст разборов на телефоне — в полтора раза мельче описания about, как и на
-     компьютере. */
+  /* Текст разборов. На компьютере он в полтора раза мельче описания about — там это
+     работает, потому что строка длинная и читается с метра. На телефоне то же
+     правило дало бы 11px: формально верно, читать невозможно. Поэтому здесь
+     пропорция сознательно нарушена, 14px — нижняя граница, на которой текст ещё
+     спокойно читается с руки. */
   .work__lead,
   .work__text,
   .work__label,
   .work__date {
-    font-size: 8px;
+    font-size: 14px;
+  }
+
+  /* Кнопка внутри разбора («ссылка на пост») — чуть крупнее текста, как и на
+     компьютере. */
+  .work__button {
+    font-size: 15px;
   }
 
   .about__bio p {
-    font-size: 12px;
-    margin: 0 0 5px;
+    font-size: 17px;
+    margin: 0 0 9px;
   }
 
   .about__resume {
-    font-size: 12px;
+    font-size: 17px;
   }
 
   .portfolio__title {
-    font-size: 12px;
+    font-size: 18px;
   }
 
+  /* Кнопка не упомянута в правках, но оставить её на прежних 12px рядом с
+     выросшими заголовками значит оставить её выглядеть забытой. */
   .btn-more {
-    font-size: 12px;
+    font-size: 15px;
+  }
+
+  .footer__link {
+    font-size: 24px;
   }
 
   .grid {
@@ -2065,11 +2151,14 @@ html[lang="en"] .hero__mascot {
     grid-column: span 2;
   }
 
-  .grid.is-collapsed .card:nth-child(n+4) {
-    display: block;
-  }
-
-  .grid.is-collapsed .card:nth-child(n+5) {
+  /* В свёрнутом виде на телефоне видно две работы, остальные четыре — под кнопкой
+     «смотреть ещё». На компьютере показываются три (базовое правило выше), и это
+     разные числа намеренно: в две колонки три карточки дают полторы строки и дыру
+     справа, а две — ровную строку.
+     Правило перебивает десктопное, где спрятано всё с четвёртой: здесь прячем всё
+     начиная с третьей. Сколько именно карточек скрыто, скрипт считает сам по
+     display, так что менять это число можно одной цифрой здесь. */
+  .grid.is-collapsed .card:nth-child(n+3) {
     display: none;
   }
 
@@ -2083,6 +2172,15 @@ html[lang="en"] .hero__mascot {
     width: min(420px, 92vw);
     padding: 16px;
     max-height: 88vh;
+  }
+
+  /* Окно с фотографией — исключение: его ширину задаёт сам квадрат, а поля ему не
+     нужны. Правило выше иначе добавило бы 16px, и квадрат уехал бы за правый край
+     экрана (ровно на эти 16px). */
+  .modal__panel--author {
+    width: auto;
+    padding: 0;
+    max-height: none;
   }
 
   .modal__body {

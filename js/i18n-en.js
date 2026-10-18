@@ -56,6 +56,10 @@ window.I18N_EN = {
   'Закрыть': 'Close',
   'описание работы': 'work description',
   'Фото Алеси Мал': 'Photo of Alesia Mal',
+  // Подписи к фотографиям в окне знакомства — их ставит main.js, поэтому перевод
+  // зовётся оттуда через I18N.t().
+  'Алеся на фоне города': 'Alesia with the city behind her',
+  'Алеся в кафе': 'Alesia at a cafe',
   'Заказать анимацию': 'Order an animation',
   'написать в тг': 'message me on telegram',
   'Включить звук': 'Turn sound on',
