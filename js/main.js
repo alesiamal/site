@@ -1588,18 +1588,52 @@
       return Array.prototype.slice.call(section.querySelectorAll('.card img, .card video'));
     }
 
+    // Длительности совпадают с .is-slide-out / .is-slide-in в style.css.
+    var SLIDE_OUT = 170;
+    var SLIDE_IN = 230;
+    var sliding = false;
+
+    function slide(dir, swap) {
+      sliding = true;
+      // Уезжаем в сторону свайпа: палец повёл влево — работа ушла влево.
+      panel.classList.add('is-slide-out');
+      panel.style.transform = 'translateX(' + dir * 100 + 'vw)';
+
+      setTimeout(function () {
+        // Панель за краем экрана — здесь её и переодеваем: подмены никто не видит.
+        panel.classList.remove('is-slide-out');
+        panel.classList.add('is-slide-jump');
+        panel.style.transform = 'translateX(' + -dir * 100 + 'vw)';
+        swap();
+
+        // Перескок надо «проявить» до того, как мы включим обратный ход: без чтения
+        // размера браузер склеит оба изменения в одно и панель не поедет, а просто
+        // окажется на месте.
+        void panel.offsetWidth;
+
+        panel.classList.remove('is-slide-jump');
+        panel.classList.add('is-slide-in');
+        panel.style.transform = 'translateX(0)';
+
+        setTimeout(function () {
+          panel.classList.remove('is-slide-in');
+          // Снимаем свой transform: в открытом окне он и так равен тому, что стоит
+          // в CSS, поэтому панель не дёрнется.
+          panel.style.transform = '';
+          sliding = false;
+        }, SLIDE_IN);
+      }, SLIDE_OUT);
+    }
+
     function go(step) {
+      // Второй свайп поверх первого сбил бы перескок на середине и панель застыла бы
+      // за краем экрана.
+      if (sliding) return;
       var list = siblings();
       var i = list.indexOf(currentMedia);
       if (i === -1 || list.length < 2) return;
       var next = list[(i + step + list.length) % list.length];
-      // Короткое затемнение панели: без него свайп между похожими работами выглядит
-      // так, будто ничего не произошло.
-      panel.classList.add('is-swapping');
-      setTimeout(function () {
-        openModal(next);
-        panel.classList.remove('is-swapping');
-      }, 160);
+      slide(step > 0 ? -1 : 1, function () { openModal(next); });
     }
 
     panel.addEventListener('touchstart', function (e) {

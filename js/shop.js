@@ -22,6 +22,7 @@
     layer = null;
     big = null;
     gallery = [];
+    sliding = false;
     document.removeEventListener('keydown', onKey, true);
   }
 
@@ -31,12 +32,49 @@
     if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
   }
 
-  // Листание по кругу. + длина перед остатком: иначе шаг назад с первой картинки дал
-  // бы -1 вместо последней.
+  /* Листание по кругу. + длина перед остатком: иначе шаг назад с первой картинки дал
+     бы -1 вместо последней.
+
+     Снимок уезжает в сторону листания, за краем экрана меняется и возвращается с
+     другой стороны: мгновенная подмена между похожими скетчами читалась как «ничего
+     не произошло». Длительности и классы — общие с панелью работы в портфолио
+     (initWorkSwipe в main.js, .is-slide-* в style.css). */
+  var SLIDE_OUT = 170;
+  var SLIDE_IN = 230;
+  var sliding = false;
+
   function step(delta) {
-    if (!layer || gallery.length < 2) return;
-    index = (index + delta + gallery.length) % gallery.length;
-    show();
+    if (!layer || gallery.length < 2 || sliding) return;
+
+    var img = big;
+    var dir = delta > 0 ? -1 : 1;
+    sliding = true;
+    img.classList.add('is-slide-out');
+    img.style.transform = 'translateX(' + dir * 100 + 'vw)';
+
+    setTimeout(function () {
+      // Окно могли закрыть, пока картинка уезжала, — тогда менять уже нечего.
+      if (!layer || big !== img) { sliding = false; return; }
+      img.classList.remove('is-slide-out');
+      img.classList.add('is-slide-jump');
+      img.style.transform = 'translateX(' + -dir * 100 + 'vw)';
+      index = (index + delta + gallery.length) % gallery.length;
+      show();
+
+      // Чтение размера проявляет перескок: без него браузер склеит оба изменения в
+      // одно и картинка просто окажется на месте, без движения.
+      void img.offsetWidth;
+
+      img.classList.remove('is-slide-jump');
+      img.classList.add('is-slide-in');
+      img.style.transform = 'translateX(0)';
+
+      setTimeout(function () {
+        img.classList.remove('is-slide-in');
+        img.style.transform = '';
+        sliding = false;
+      }, SLIDE_IN);
+    }, SLIDE_OUT);
   }
 
   function show() {
