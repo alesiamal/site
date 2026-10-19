@@ -1152,7 +1152,11 @@ html[lang="en"] .hero__mascot {
    У .modal__body стоит display:flex, поэтому скрытый атрибутом блок продолжал
    рисоваться под разбором — с пустым «описание работы» и битой картинкой. */
 .modal__body[hidden],
-.modal__detail[hidden] {
+.modal__detail[hidden],
+/* Разборы уже открытых работ лежат рядом с показанным и ждут своей очереди
+   (см. detailCache в main.js). Прячет их атрибут hidden — правило здесь на случай,
+   если у .work когда-нибудь появится свой display: он бы перебил браузерный. */
+.modal__detail > .work[hidden] {
   display: none;
 }
 

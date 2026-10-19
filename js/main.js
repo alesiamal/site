@@ -1132,13 +1132,19 @@
 
     syncArrows();
 
-    return function teardown() {
+    // Остановка анимации отдельно от полной отписки: разбор, спрятанный до
+    // следующего открытия, ленту не выбрасывает, но крутиться ей там нельзя (см.
+    // sleepDetail).
+    teardown.stop = stopAnim;
+    return teardown;
+
+    function teardown() {
       window.removeEventListener('resize', syncArrows);
       // Обязательно. Если закрыть окно посреди прокрутки, цикл продолжил бы крутиться
       // над выброшенной лентой: у отсоединённого узла scrollLeft всегда 0, до цели
       // он не дойдёт никогда, и rAF работал бы до перезагрузки страницы.
       stopAnim();
-    };
+    }
   }
 
   // Видео играют, только пока видны. Сначала это было про разборы (в разборе куба
@@ -1421,15 +1427,121 @@
     };
   }
 
-  var carouselTeardown = null;
   var detailCleanupTimer = null;
 
-  // Возвращает окно в простой режим: выбрасывает разбор вместе с картинками и
+  /* Разборы, которые уже открывали, не собираем заново. Раньше окно выбрасывало
+     разметку при каждой смене работы, и свайп назад начинал всё сначала: пустой
+     прямоугольник вместо видео, пока файл качается по второму разу. Теперь собранный
+     разбор остаётся жить рядом, просто спрятанный, и при возврате показывается
+     сразу — вместе с уже загруженным видео.
+
+     Храним не все подряд, а шесть последних — ровно один раздел: можно обойти свайпом
+     всю диджитал-часть или всю печатку и вернуться к началу, ничего не потеряв.
+     Седьмая работа вытесняет самую давнюю, и та собирается заново.
+
+     Второй предел — по видео, и он важнее первого. Сафари на айфоне держит
+     ограниченное число загруженных медиа на страницу (около шестнадцати), а дальше
+     просто перестаёт грузить новые — ровно та беда, с которой мы уже воевали в
+     разборах. Поэтому если в сохранённых работах набралось больше дюжины загруженных
+     видео, самые давние вылетают, сколько бы их ни было по счёту работ.
+
+     Лишней закачки от этого нет: видео в разборе качаются по мере прокрутки
+     (initLazyVideos), и в спрятанном разборе ни одно не начнёт грузиться само. */
+  var DETAIL_CACHE_MAX = 6;
+  var DETAIL_VIDEO_MAX = 12;
+  var detailCache = [];       // [{ id, node, teardown, stops }], свежие в конце
+  var activeDetail = null;    // запись, показанная сейчас
+
+  function eachVideo(node, fn) {
+    Array.prototype.forEach.call(node.querySelectorAll('video'), fn);
+  }
+
+  /* Усыпить разбор: он остаётся собранным, но не шумит и не жжёт батарею. Важнее, чем
+     кажется: лента внутри может быть в середине плавной прокрутки, а у спрятанного
+     узла scrollLeft всегда 0 — цикл анимации не дошёл бы до цели никогда и крутился
+     бы до перезагрузки страницы. */
+  function sleepDetail(entry) {
+    if (!entry) return;
+    entry.stops.forEach(function (stop) { stop(); });
+    eachVideo(entry.node, function (v) { v.pause(); });
+  }
+
+  /* Собирает разбор и сразу вешает его в окно — видимым, а не спрятанным. Это
+     обязательно: кнопка звука встаёт в угол видео по его замеренным размерам, а поля
+     в ТЗ равняются по высоте соседней картинки. У спрятанного узла все размеры нули, и
+     всё это встало бы не туда. Окно в этот момент ещё не открыто (прозрачное), но
+     размеры у него уже настоящие — visibility: hidden раскладку не отменяет. */
+  function buildDetail(id, tpl) {
+    // У каждого разбора ровно один корневой <article class="work"> — его и берём,
+    // без обёртки: CSS разбора написан про прямых детей .work.
+    var node = tpl.content.firstElementChild.cloneNode(true);
+    modalDetail.appendChild(node);
+
+    // Лент в разборе может быть несколько, у каждой своя анимация и свой слушатель на
+    // window — собираем все отписки в одну, чтобы снять их разом при вытеснении.
+    var teardowns = [];
+    var stops = [];
+    node.querySelectorAll('.carousel').forEach(function (el) {
+      var t = initCarousel(el);
+      if (!t) return;
+      teardowns.push(t);
+      if (t.stop) stops.push(t.stop);
+    });
+
+    // Видео ищем в самой работе, а считаем видимыми — относительно окна разбора:
+    // прокручивается именно оно. Передать сюда один node нельзя — наблюдатель мерил
+    // бы видимость внутри самой работы, где видно всё и сразу.
+    [initLazyVideos(node, modalDetail), initSoundButtons(node), initBriefs(node), initZoom(node)]
+      .forEach(function (t) { if (t) teardowns.push(t); });
+
+    var entry = {
+      id: id,
+      node: node,
+      stops: stops,
+      teardown: function () {
+        teardowns.forEach(function (t) { t(); });
+        node.remove();
+      }
+    };
+    detailCache.push(entry);
+    return entry;
+  }
+
+  function cachedDetail(id) {
+    for (var i = 0; i < detailCache.length; i++) {
+      if (detailCache[i].id === id) return detailCache.splice(i, 1)[0];
+    }
+    return null;
+  }
+
+  function loadedVideos() {
+    var n = 0;
+    detailCache.forEach(function (entry) {
+      eachVideo(entry.node, function (v) { if (v.readyState > 0) n++; });
+    });
+    return n;
+  }
+
+  // Вытесняем самые давние, но никогда — показанную сейчас работу.
+  function trimDetailCache() {
+    while (detailCache.length > DETAIL_CACHE_MAX ||
+           (detailCache.length > 1 && loadedVideos() > DETAIL_VIDEO_MAX)) {
+      var victim = null;
+      for (var i = 0; i < detailCache.length; i++) {
+        if (detailCache[i] !== activeDetail) { victim = detailCache.splice(i, 1)[0]; break; }
+      }
+      if (!victim) return;
+      victim.teardown();
+    }
+  }
+
+  // Возвращает окно в простой режим: прячет разбор (не выбрасывая его из кэша) и
   // снимает хук is-detail.
   function resetDetail() {
     clearTimeout(detailCleanupTimer);
-    if (carouselTeardown) { carouselTeardown(); carouselTeardown = null; }
-    modalDetail.textContent = '';
+    sleepDetail(activeDetail);
+    if (activeDetail) activeDetail.node.hidden = true;
+    activeDetail = null;
     modalDetail.hidden = true;
     modalBody.hidden = false;
     modal.classList.remove('is-detail');
@@ -1437,46 +1549,47 @@
 
   // Подставляет разбор работы, если он у неё есть. Возвращает true, если подставил.
   function openDetail(media) {
-    // Сначала всегда сбрасываем прошлое состояние: окно могли закрыть и тут же
-    // открыть другую работу, пока отложенная уборка ещё не сработала (см. closeModal).
-    resetDetail();
-
     var id = media.dataset.detail;
-    if (!id) return false;
-    var tpl = document.getElementById(id);
-    if (!tpl) return false;
-    modalDetail.appendChild(tpl.content.cloneNode(true));
+    var tpl = id ? document.getElementById(id) : null;
+    // У работы нет разбора — показываем простое окно, прошлый разбор прячем.
+    if (!tpl) { resetDetail(); return false; }
+
+    clearTimeout(detailCleanupTimer);
+
+    // Прошлую работу убираем первой: собирать новую надо уже в освободившемся окне,
+    // чтобы она мерила себя по нему (см. buildDetail).
+    var entry = cachedDetail(id);
+    if (entry !== activeDetail) {
+      sleepDetail(activeDetail);
+      if (activeDetail) activeDetail.node.hidden = true;
+      activeDetail = null;
+    }
     modalDetail.hidden = false;
     modalBody.hidden = true;
     // Хук для CSS: у разбора свой фон и своя ширина окна, простую модалку не трогаем.
     modal.classList.add('is-detail');
 
-    // Лент в разборе может быть несколько, у каждой своя анимация и свой слушатель на
-    // window — собираем все отписки в одну, чтобы при закрытии снять их разом.
-    var teardowns = [];
-    modalDetail.querySelectorAll('.carousel').forEach(function (el) {
-      var t = initCarousel(el);
-      if (t) teardowns.push(t);
+    if (!entry) entry = buildDetail(id, tpl);
+    else detailCache.push(entry);          // снова самая свежая
+    entry.node.hidden = false;
+    activeDetail = entry;
+
+    // Работа всегда начинается сначала — и открытая из сетки, и возвращённая свайпом.
+    // Отматываем только то, что уже загружено: трогать currentTime у видео, которое
+    // ещё не начинало качаться, незачем, оно и так начнётся с нуля.
+    eachVideo(entry.node, function (v) {
+      if (v.readyState > 0) v.currentTime = 0;
+    });
+    // Ленты внутри — тоже к началу, иначе сохранённая работа открывалась бы
+    // прокрученной до середины, а открытая из сетки — нет.
+    Array.prototype.forEach.call(entry.node.querySelectorAll('.carousel__viewport'), function (vp) {
+      vp.scrollLeft = 0;
     });
 
-    var videoTeardown = initLazyVideos(modalDetail);
-    if (videoTeardown) teardowns.push(videoTeardown);
-
-    var soundTeardown = initSoundButtons(modalDetail);
-    if (soundTeardown) teardowns.push(soundTeardown);
-
-    var briefTeardown = initBriefs(modalDetail);
-    if (briefTeardown) teardowns.push(briefTeardown);
-
-    var zoomTeardown = initZoom(modalDetail);
-    if (zoomTeardown) teardowns.push(zoomTeardown);
-
-    carouselTeardown = function () {
-      teardowns.forEach(function (t) { t(); });
-    };
-
-    // Открываем всегда с начала: модалка могла остаться прокрученной с прошлого раза.
+    // Открываем всегда с начала: окно могло остаться прокрученным с прошлого раза.
     modalDetail.scrollTop = 0;
+
+    trimDetailCache();
     return true;
   }
 
@@ -1525,14 +1638,15 @@
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
 
-    // Анимацию карусели гасим сразу — ей незачем крутиться в закрывающемся окне.
-    if (carouselTeardown) { carouselTeardown(); carouselTeardown = null; }
+    // Видео и ленты гасим сразу: окна уже не видно, а звук и анимация остались бы.
+    sleepDetail(activeDetail);
 
-    // А сам разбор выбрасываем только после того, как окно догаснет (opacity 0.3s в
-    // CSS). У разбора свой серый фон и своя ширина окна: убери их мгновенно — и на
-    // гаснущей панели на треть секунды мелькнёт белый прямоугольник другого размера.
+    // А прячем разбор только после того, как окно догаснет (opacity 0.3s в CSS). У
+    // разбора свой серый фон и своя ширина окна: убери их мгновенно — и на гаснущей
+    // панели на треть секунды мелькнёт белый прямоугольник другого размера. Сама
+    // разметка при этом остаётся в кэше: откроют работу снова — покажем готовую.
     // Проверка is-open обязательна: если за эти 300мс окно успели открыть снова,
-    // уборка уже не наша — новое содержимое выбрасывать нельзя.
+    // уборка уже не наша — новое содержимое прятать нельзя.
     clearTimeout(detailCleanupTimer);
     detailCleanupTimer = setTimeout(function () {
       if (!modal.classList.contains('is-open')) resetDetail();
